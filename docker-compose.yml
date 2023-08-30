@@ -1,0 +1,29 @@
+version: "3.6"
+services:
+  blocksync-core:
+    container_name: blocksync-core
+    image: ghcr.io/ixofoundation/ixo-blocksync-core:latest
+    env_file: .env
+    restart: always
+    ports:
+      - 8080:8080
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+    depends_on:
+      - blocksync-core-db
+
+  blocksync-core-db:
+    container_name: blocksync-core-db
+    image: postgres:12.12
+    restart: always
+    environment:
+      - POSTGRES_DB=Blocksync-core
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+      - ./src/prisma/migrations/20230830061749_init/:/docker-entrypoint-initdb.d/
