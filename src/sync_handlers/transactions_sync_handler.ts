@@ -11,7 +11,7 @@ export const syncTransactions = (
       const transaction = decodeTransaction(tr);
       if (!transaction) return;
 
-      let messages: Prisma.TransactionUncheckedCreateInput =
+      let messages: Prisma.TransactionCoreUncheckedCreateInput =
         transaction.body.messages
           .map((m) => {
             const value = decodeMessage(m);

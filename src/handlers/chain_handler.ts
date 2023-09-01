@@ -1,13 +1,13 @@
 import { prisma } from "../prisma/prisma_client";
-import { Chain } from "@prisma/client";
+import { ChainCore } from "@prisma/client";
 
-export const createChain = async (chainDoc: Chain) => {
-  return await prisma.chain.create({ data: chainDoc });
+export const createChain = async (chainDoc: ChainCore) => {
+  return await prisma.chainCore.create({ data: chainDoc });
 };
 
-export const updateChain = async (chainDoc: Chain) => {
+export const updateChain = async (chainDoc: ChainCore) => {
   try {
-    const res = await prisma.chain.update({
+    const res = await prisma.chainCore.update({
       where: { chainId: chainDoc.chainId },
       data: { blockHeight: chainDoc.blockHeight },
     });
@@ -20,7 +20,7 @@ export const updateChain = async (chainDoc: Chain) => {
 
 export const getChain = async (chainId: string) => {
   try {
-    const res = await prisma.chain.findFirst({
+    const res = await prisma.chainCore.findFirst({
       where: {
         chainId: chainId,
       },
@@ -32,9 +32,9 @@ export const getChain = async (chainId: string) => {
   }
 };
 
-export const getLastSyncedBlockHeight = async (chainDoc: Chain) => {
+export const getLastSyncedBlockHeight = async (chainDoc: ChainCore) => {
   try {
-    const res = await prisma.chain.findFirst({
+    const res = await prisma.chainCore.findFirst({
       where: { chainId: chainDoc.chainId },
     });
     if (res) return res.blockHeight;

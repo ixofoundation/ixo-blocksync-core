@@ -22,7 +22,7 @@ export const syncBlock = async (
   const transactions: any = syncTransactions(transactionResponses, timestamp);
 
   try {
-    await prisma.block.create({
+    await prisma.blockCore.create({
       data: {
         height: blockHeight,
         hash: upperHexFromUint8Array(blockHash),

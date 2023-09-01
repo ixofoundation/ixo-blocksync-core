@@ -12,6 +12,8 @@
 
 Syncs the core info from an ixo blockchain to an instance of PostgreSQL. The core info consists of the Block data, Transactions, Messages and Events.
 
+> For now this server doesnt expose any API interfaces as it's purpose is only to generate and keep up to date the ixo-blocksync-core database, we plan on adding API interfaces in the near future
+
 ## Run
 
 ### From Source

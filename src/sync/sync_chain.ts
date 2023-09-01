@@ -1,11 +1,11 @@
-import { Chain } from "@prisma/client";
+import { ChainCore } from "@prisma/client";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import * as Proto from "../util/proto";
 import * as ChainHandler from "../handlers/chain_handler";
 import { createQueryClient, createRegistry } from "@ixo/impactxclient-sdk";
 import { RPC } from "../util/secrets";
 
-export let currentChain: Chain;
+export let currentChain: ChainCore;
 export let queryClient: Awaited<ReturnType<typeof createQueryClient>>;
 export let registry: ReturnType<typeof createRegistry>;
 export let tendermintClient: Awaited<
