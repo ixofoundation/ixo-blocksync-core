@@ -54,6 +54,15 @@ CREATE TABLE "EventCore" (
 -- CreateIndex
 CREATE UNIQUE INDEX "BlockCore_hash_key" ON "BlockCore"("hash");
 
+-- CreateIndex
+CREATE INDEX "TransactionCore_blockHeight_idx" ON "TransactionCore"("blockHeight");
+
+-- CreateIndex
+CREATE INDEX "MessageCore_transactionHash_idx" ON "MessageCore"("transactionHash");
+
+-- CreateIndex
+CREATE INDEX "EventCore_blockHeight_idx" ON "EventCore"("blockHeight");
+
 -- AddForeignKey
 ALTER TABLE "TransactionCore" ADD CONSTRAINT "TransactionCore_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "BlockCore"("height") ON DELETE CASCADE ON UPDATE CASCADE;
 

@@ -35,12 +35,12 @@ export const startSync = async () => {
       if (block && txsEvent && blockTM) {
         if (logIndexTime) console.time("index");
         // if block and events is not null, check if block has txs and then if events has
-        // no trx, means abci layer is behind tendermint layer, wait 3 seconds and try again
+        // no trx, means abci layer is behind tendermint layer, wait 1 seconds and try again
         if (block.block?.data?.txs.length && !txsEvent.txs.length) {
           console.log(
-            "ABCI Layer behind Tendermint Layer, waiting 3 seconds and trying again"
+            "ABCI Layer behind Tendermint Layer, waiting 1 seconds and trying again"
           );
-          await sleep(3000);
+          await sleep(1000);
           continue;
         }
 
@@ -71,7 +71,7 @@ export const startSync = async () => {
         currentBlock++;
       } else {
         console.log(`Next block: ${currentBlock}`);
-        await sleep(3000);
+        await sleep(1500);
       }
     } catch (error) {
       console.error(`Error Adding Block ${currentBlock}: ${error}`);

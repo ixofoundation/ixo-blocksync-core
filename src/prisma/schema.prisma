@@ -37,6 +37,8 @@ model TransactionCore {
   messages    MessageCore[]
   Block       BlockCore?    @relation(fields: [blockHeight], references: [height], onDelete: Cascade)
   blockHeight Int
+
+  @@index([blockHeight])
 }
 
 model MessageCore {
@@ -45,6 +47,8 @@ model MessageCore {
   value           Json
   Transaction     TransactionCore @relation(fields: [transactionHash], references: [hash], onDelete: Cascade)
   transactionHash String
+
+  @@index([transactionHash])
 }
 
 model EventCore {
@@ -56,4 +60,6 @@ model EventCore {
   endBlockEvent   Boolean   @default(false)
   Block           BlockCore @relation(fields: [blockHeight], references: [height], onDelete: Cascade)
   blockHeight     Int
+
+  @@index([blockHeight])
 }
