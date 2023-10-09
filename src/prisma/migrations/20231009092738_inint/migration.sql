@@ -24,6 +24,7 @@ CREATE TABLE "TransactionCore" (
     "gasWanted" TEXT NOT NULL,
     "time" TIMESTAMP(3) NOT NULL,
     "blockHeight" INTEGER NOT NULL,
+    "memo" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "TransactionCore_pkey" PRIMARY KEY ("hash")
 );

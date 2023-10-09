@@ -56,6 +56,16 @@ export const getTMBlockbyHeight = async (height: number) => {
   }
 };
 
+export const getTx = async (hash: string) => {
+  try {
+    const res = await queryClient.cosmos.tx.v1beta1.getTx({ hash });
+    return res;
+  } catch (error) {
+    console.error("getTx: ", error.message);
+    return;
+  }
+};
+
 export const decodeTransaction = (tx: TxResponse) => {
   try {
     const res = registry.decode(tx.tx!);
