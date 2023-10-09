@@ -28,6 +28,7 @@ export const syncTransactions = (
         hash: tr.txhash,
         code: tr.code,
         fee: transaction.authInfo.fee,
+        memo: transaction.body.memo,
         gasUsed: tr.gasUsed.toString(),
         gasWanted: tr.gasWanted.toString(),
         time: timestamp,
