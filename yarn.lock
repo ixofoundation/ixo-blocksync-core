@@ -207,10 +207,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@ixo/impactxclient-sdk@1.1.13":
-  version "1.1.13"
-  resolved "https://registry.yarnpkg.com/@ixo/impactxclient-sdk/-/impactxclient-sdk-1.1.13.tgz#8e5656c184dde9221c5aedb54be7151842db4172"
-  integrity sha512-k1Yyl9fdsAzKnm15KKlPXDTskIGOP/EDF3PrTcZREkGs3iTb5j82mG8j+5V1l3votWR1+d++cE0csvs75X/7xA==
+"@ixo/impactxclient-sdk@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@ixo/impactxclient-sdk/-/impactxclient-sdk-1.2.0.tgz#e2350784d6c972accd4d3ecdb4e8a82852e29a18"
+  integrity sha512-X6kYhvirTNy2kCpWWGbGZZmeOL7pugZa+iEdUH57kF0SaAuBSMA5tcj+UIrIM5GhIP/LWChvKonukf3NZUAsmQ==
   dependencies:
     "@babel/runtime" "7.19.4"
     "@cosmjs/amino" "0.29.4"

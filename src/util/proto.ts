@@ -24,7 +24,7 @@ export const getBlockbyHeight = async (height: number | string) => {
     return res;
   } catch (error) {
     if (error.toString().includes("(18)")) {
-      console.log("Waiting for Blocks");
+      // console.log("Waiting for Blocks");
       return;
     }
     console.error("getBlockbyHeight: ", error.message);
