@@ -22,6 +22,7 @@ export const startSync = async () => {
   if (currentBlock !== 1) currentBlock++;
 
   if (logSync100Time) console.time("sync");
+  let count = 0;
   while (syncing) {
     try {
       if (logFetchTime) console.time("fetch");
@@ -33,6 +34,7 @@ export const startSync = async () => {
       if (logFetchTime) console.timeEnd("fetch");
 
       if (block && txsEvent && blockTM) {
+        count = 0;
         if (logIndexTime) console.time("index");
         // if block and events is not null, check if block has txs and then if events has
         // no trx, means abci layer is behind tendermint layer, wait 1 seconds and try again
@@ -70,8 +72,11 @@ export const startSync = async () => {
         if (logIndexTime) console.timeEnd("index");
         currentBlock++;
       } else {
-        console.log(`Next block: ${currentBlock}`);
-        await sleep(1500);
+        count++;
+        if (count === 10) {
+          console.log(`Next block, 10th attempt: ${currentBlock}`);
+        }
+        await sleep(1000);
       }
     } catch (error) {
       console.error(`Error Adding Block ${currentBlock}: ${error}`);
