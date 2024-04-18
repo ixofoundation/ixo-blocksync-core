@@ -57,7 +57,6 @@ export const startSync = async () => {
             blockTM.beginBlockEvents as Event[],
             blockTM.endBlockEvents as Event[]
           ),
-
           ChainHandler.updateChain({
             chainId: currentChain.chainId,
             blockHeight: blockHeight,

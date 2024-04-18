@@ -1,6 +1,7 @@
 require("log-timestamp");
 require("dotenv").config();
 
+import "./util/long";
 import { app } from "./app";
 import http from "http";
 import * as SyncBlocks from "./sync/sync_blocks";

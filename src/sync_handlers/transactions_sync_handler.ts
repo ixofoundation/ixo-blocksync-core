@@ -4,27 +4,32 @@ import { decodeMessage, decodeTransaction } from "../util/proto";
 
 export const syncTransactions = (
   transactionResponses: TxResponse[],
-  timestamp: Date
+  timestamp: Date,
+  blockHeight: number
 ) => {
-  return transactionResponses
-    .map((tr) => {
-      const transaction = decodeTransaction(tr);
-      if (!transaction) return;
+  const allMessages: Prisma.MessageCoreCreateManyInput[] = [];
+  const allTransactions: Prisma.TransactionCoreUncheckedCreateInput[] = [];
 
-      let messages: Prisma.TransactionCoreUncheckedCreateInput =
-        transaction.body.messages
-          .map((m) => {
-            const value = decodeMessage(m);
-            if (!value) return;
+  for (const tr of transactionResponses) {
+    const transaction = decodeTransaction(tr);
 
-            return {
-              typeUrl: m.typeUrl,
-              value: value,
-            };
-          })
-          .filter((m) => !!m);
+    if (transaction) {
+      // Extract and map messages to their decoded form
+      for (const m of transaction.body.messages) {
+        const value = decodeMessage(m);
 
-      return {
+        // Only add valid decoded messages to allMessages
+        if (value) {
+          allMessages.push({
+            typeUrl: m.typeUrl,
+            value,
+            transactionHash: tr.txhash,
+          });
+        }
+      }
+
+      // Add the transaction if there are valid messages
+      allTransactions.push({
         hash: tr.txhash,
         code: tr.code,
         fee: transaction.authInfo.fee,
@@ -32,8 +37,10 @@ export const syncTransactions = (
         gasUsed: tr.gasUsed.toString(),
         gasWanted: tr.gasWanted.toString(),
         time: timestamp,
-        messages: { createMany: { data: messages } },
-      };
-    })
-    .filter((t) => !!t);
+        blockHeight,
+      });
+    }
+  }
+
+  return { allMessages, allTransactions };
 };

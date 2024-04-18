@@ -13,27 +13,47 @@ export const syncBlock = async (
   beginBlockEvents: Event[],
   endBlockEvents: Event[]
 ) => {
-  const events: any = syncEvents(
+  // console.log("Syncing Block 1 wait then sync events", getMemoryUsage());
+  // await sleep(wait);
+  const events = syncEvents(
     beginBlockEvents,
     transactionResponses.flatMap((txRes) => txRes.events),
     endBlockEvents,
-    timestamp
+    timestamp,
+    blockHeight
   );
-  const transactions: any = syncTransactions(transactionResponses, timestamp);
+  const { allMessages, allTransactions } = syncTransactions(
+    transactionResponses,
+    timestamp,
+    blockHeight
+  );
 
   try {
-    await prisma.blockCore.create({
-      data: {
-        height: blockHeight,
-        hash: upperHexFromUint8Array(blockHash),
-        time: timestamp,
-        transactions: { create: transactions },
-        events: { createMany: { data: events } },
-      },
-    });
+    await prisma.$transaction([
+      prisma.blockCore.create({
+        data: {
+          height: blockHeight,
+          hash: upperHexFromUint8Array(blockHash),
+          time: timestamp,
+        },
+        select: { height: true },
+      }),
+      // spread creations as more performant than createMany
+      ...events.map((event) =>
+        prisma.eventCore.create({ data: event, select: { id: true } })
+      ),
+      ...allTransactions.map((tx) =>
+        prisma.transactionCore.create({ data: tx, select: { code: true } })
+      ),
+      ...allMessages.map((msg) =>
+        prisma.messageCore.create({ data: msg, select: { id: true } })
+      ),
+    ]);
+
     return;
   } catch (error) {
-    console.error("syncBlock: ", error);
+    console.error("ERROR::syncBlock:: ", error);
     return;
+    // throw error;
   }
 };
