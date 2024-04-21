@@ -8,9 +8,10 @@
     "build": "tsc",
     "dev": "npx ts-node src/index.ts",
     "docs-gen": "npx typedoc src/* src/*/*",
-    "prisma:dev": "npx prisma migrate dev",
-    "prisma:reset": "npx prisma migrate reset",
-    "prisma:generate": "npx prisma generate"
+    "migrate:up": "node-pg-migrate up -m ./src/postgres/migrations",
+    "migrate:down": "node-pg-migrate down  -m ./src/postgres/migrations",
+    "migrate:redo": "node-pg-migrate redo  -m ./src/postgres/migrations",
+    "migrate:create": "node-pg-migrate create  --migration-filename-format utc --migration-file-language sql  -m ./src/postgres/migrations"
   },
   "repository": "https://github.com/ixofoundation/ixo-blocksync-core",
   "keywords": [
@@ -20,7 +21,6 @@
   "license": "Apache 2",
   "dependencies": {
     "@ixo/impactxclient-sdk": "1.2.0",
-    "@prisma/client": "5.12.1",
     "@sentry/node": "7.36.0",
     "@sentry/tracing": "7.36.0",
     "body-parser": "1.20.1",
@@ -31,20 +31,19 @@
     "helmet": "6.0.1",
     "http": "0.0.0",
     "log-timestamp": "0.3.0",
-    "prisma": "5.12.1",
+    "node-pg-migrate": "7.0.0",
+    "pg": "8.11.5",
     "ts-node": "10.9.1",
     "typescript": "4.9.5"
   },
   "devDependencies": {
-    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/git": "10.0.1",
     "@types/compression": "1.7.2",
     "@types/express": "4.17.17",
     "@types/node": "18.13.0",
-    "conventional-changelog-conventionalcommits": "^7.0.2",
+    "@types/pg": "8.11.5",
+    "conventional-changelog-conventionalcommits": "7.0.2",
     "semantic-release": "22",
     "typedoc": "0.23.24"
-  },
-  "prisma": {
-    "schema": "src/prisma/schema.prisma"
   }
 }

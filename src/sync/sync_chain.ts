@@ -1,11 +1,10 @@
-import { ChainCore } from "@prisma/client";
 import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
 import * as Proto from "../util/proto";
-import * as ChainHandler from "../handlers/chain_handler";
 import { createQueryClient, createRegistry } from "@ixo/impactxclient-sdk";
 import { RPC } from "../util/secrets";
+import { Chain, createChain, getChain } from "../postgres/chain";
 
-export let currentChain: ChainCore;
+export let currentChain: Chain;
 export let queryClient: Awaited<ReturnType<typeof createQueryClient>>;
 export let registry: ReturnType<typeof createRegistry>;
 export let tendermintClient: Awaited<
@@ -22,14 +21,14 @@ export const syncChain = async () => {
     const chainId = res?.block?.header?.chainId || "";
     if (!chainId) throw new Error("No Chain Found on RPC Endpoint");
 
-    const existingChain = await ChainHandler.getChain(chainId);
+    const existingChain = await getChain(chainId);
 
     if (existingChain) {
       currentChain = existingChain;
       return;
     }
 
-    const newChain = await ChainHandler.createChain({
+    const newChain = await createChain({
       chainId: chainId,
       blockHeight: 1,
     });

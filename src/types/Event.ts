@@ -29,7 +29,8 @@ export enum EventTypes {
   wasm = "wasm",
 }
 
-export const EventTypesArray = Object.values(EventTypes) as string[];
+const EventTypesArray = Object.values(EventTypes) as string[];
+export const EventTypesSet = new Set(EventTypesArray);
 
 export type Attribute = {
   key: string;

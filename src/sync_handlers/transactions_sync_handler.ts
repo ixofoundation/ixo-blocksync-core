@@ -1,14 +1,10 @@
-import { Prisma } from "@prisma/client";
 import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
 import { decodeMessage, decodeTransaction } from "../util/proto";
+import { MessageCore, TransactionCore } from "../postgres/block";
 
-export const syncTransactions = (
-  transactionResponses: TxResponse[],
-  timestamp: Date,
-  blockHeight: number
-) => {
-  const allMessages: Prisma.MessageCoreCreateManyInput[] = [];
-  const allTransactions: Prisma.TransactionCoreUncheckedCreateInput[] = [];
+export const syncTransactions = (transactionResponses: TxResponse[]) => {
+  const allMessages: MessageCore[] = [];
+  const allTransactions: TransactionCore[] = [];
 
   for (const tr of transactionResponses) {
     const transaction = decodeTransaction(tr);
@@ -36,8 +32,6 @@ export const syncTransactions = (
         memo: transaction.body.memo,
         gasUsed: tr.gasUsed.toString(),
         gasWanted: tr.gasWanted.toString(),
-        time: timestamp,
-        blockHeight,
       });
     }
   }

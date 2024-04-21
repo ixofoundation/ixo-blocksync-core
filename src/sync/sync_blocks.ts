@@ -1,10 +1,11 @@
 import * as Proto from "../util/proto";
-import * as ChainHandler from "../handlers/chain_handler";
 import * as BlockSyncHandler from "../sync_handlers/block_sync_handler";
 import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
 import { currentChain } from "./sync_chain";
 import { utils } from "@ixo/impactxclient-sdk";
 import { sleep } from "../util/helpers";
+import { getChain, updateChain } from "../postgres/chain";
+import { getMemoryUsage } from "../util/memory";
 
 let syncing: boolean;
 
@@ -15,7 +16,7 @@ const logSync100Time = true;
 export const startSync = async () => {
   syncing = true;
 
-  let currentBlock = await ChainHandler.getLastSyncedBlockHeight(currentChain);
+  let currentBlock = (await getChain(currentChain.chainId))?.blockHeight || 1;
   console.log(`Starting Syncing at Block ${currentBlock}`);
 
   // if already has synced, start from next block
@@ -24,6 +25,9 @@ export const startSync = async () => {
   if (logSync100Time) console.time("sync");
   let count = 0;
   while (syncing) {
+    // if (currentBlock === 2001) return;
+    // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
+    // await sleep(4000);
     try {
       if (logFetchTime) console.time("fetch");
       const [block, txsEvent, blockTM] = await Promise.all([
@@ -57,7 +61,7 @@ export const startSync = async () => {
             blockTM.beginBlockEvents as Event[],
             blockTM.endBlockEvents as Event[]
           ),
-          ChainHandler.updateChain({
+          updateChain({
             chainId: currentChain.chainId,
             blockHeight: blockHeight,
           }),
@@ -75,10 +79,10 @@ export const startSync = async () => {
         if (count === 10) {
           console.log(`Next block, 10th attempt: ${currentBlock}`);
         }
-        await sleep(1000);
+        await sleep(1100);
       }
     } catch (error) {
-      console.error(`Error Adding Block ${currentBlock}: ${error}`);
+      console.error(`ERROR::Adding Block ${currentBlock}:: ${error}`);
     }
   }
 };
