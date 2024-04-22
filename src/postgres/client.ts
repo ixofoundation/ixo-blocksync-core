@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 
-export const corePool = new Pool({
+export const pool = new Pool({
   application_name: "Blocksync-core",
   connectionString: process.env.DATABASE_URL,
   // maximum number of clients the pool should contain
@@ -17,11 +17,11 @@ export const corePool = new Pool({
 
 // helper function that manages connection transaction start and commit and rollback
 // on fail, user can just pass a function that takes a client as argument
-export const withCoreTransaction = async (
+export const withTransaction = async (
   fn: (client: PoolClient) => Promise<any>
 ) => {
   // const start = Date.now();
-  const client = await corePool.connect();
+  const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const res = await fn(client);
@@ -38,9 +38,9 @@ export const withCoreTransaction = async (
 
 // helper function that manages connect to pool and release,
 // user can just pass a function that takes a client as argument
-export const withCoreQuery = async (fn: (client: any) => Promise<any>) => {
+export const withQuery = async (fn: (client: any) => Promise<any>) => {
   // const start = Date.now();
-  const client = await corePool.connect();
+  const client = await pool.connect();
   try {
     return await fn(client);
   } catch (error) {

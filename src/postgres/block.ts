@@ -1,4 +1,4 @@
-import { withCoreTransaction } from "./client";
+import { withTransaction } from "./client";
 
 export type BlockCore = {
   height: number;
@@ -54,7 +54,7 @@ FROM jsonb_to_recordset($1) AS ev("type" text, attributes jsonb[], "beginBlockEv
 export const insertBlock = async (block: BlockCore): Promise<void> => {
   try {
     // do all the insertions in a single transaction
-    await withCoreTransaction(async (client) => {
+    await withTransaction(async (client) => {
       await client.query(insertBlockSql, [
         block.height,
         block.hash,

@@ -11,7 +11,7 @@ DATABASE_URL=<your_database_url>
 ```
 
 The `src/postgres/client.ts` file provides helper functions for connecting to the PostgreSQL database and managing transactions.
-The `withCoreTransaction` function simplifies executing queries within a single transaction and also a `ROLLBACK` in case an error occurrs. Below is an example:
+The `withTransaction` function simplifies executing queries within a single transaction and also a `ROLLBACK` in case an error occurrs. Below is an example:
 
 ```ts
 const insertBlockSql = `
@@ -26,7 +26,7 @@ FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text
 export const insertBlock = async (block: BlockCore): Promise<void> => {
   try {
     // do all the insertions in a single transaction
-    await withCoreTransaction(async (client) => {
+    await withTransaction(async (client) => {
       await client.query(insertBlockSql, [
         block.height,
         block.hash,
@@ -54,7 +54,7 @@ SELECT * FROM "ChainCore" WHERE "chainId" = $1
 `;
 export const getChain = async (chainId: string): Promise<Chain | undefined> => {
   try {
-    const res = await corePool.query(getChainSql, [chainId]);
+    const res = await pool.query(getChainSql, [chainId]);
     return res.rows[0];
   } catch (error) {
     throw error;
