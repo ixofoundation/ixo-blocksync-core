@@ -1,4 +1,5 @@
 import { Pool, PoolClient } from "pg";
+import { DATABASE_USE_SSL } from "../util/secrets";
 
 export const pool = new Pool({
   application_name: "Blocksync-core",
@@ -9,10 +10,11 @@ export const pool = new Pool({
   // number of milliseconds a client must sit idle in the pool and not be checked out
   // before it is disconnected from the backend and discarded
   // default is 10000 (10 seconds) - set to 0 to disable auto-disconnection of idle clients
-  idleTimeoutMillis: 10000,
+  // idleTimeoutMillis: 10000,
   // number of milliseconds to wait before timing out when connecting a new client
   // by default this is 0 which means no timeout
   connectionTimeoutMillis: 1000,
+  ...(DATABASE_USE_SSL && { ssl: { rejectUnauthorized: false } }), // Use SSL (recommended
 });
 
 // helper function that manages connection transaction start and commit and rollback
