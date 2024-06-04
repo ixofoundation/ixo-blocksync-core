@@ -13,7 +13,7 @@ export const pool = new Pool({
   // idleTimeoutMillis: 10000,
   // number of milliseconds to wait before timing out when connecting a new client
   // by default this is 0 which means no timeout
-  connectionTimeoutMillis: 1000,
+  connectionTimeoutMillis: 2000,
   ...(DATABASE_USE_SSL && { ssl: { rejectUnauthorized: false } }), // Use SSL (recommended
 });
 

@@ -22,10 +22,12 @@ export const startSync = async () => {
   // if already has synced, start from next block
   if (currentBlock !== 1) currentBlock++;
 
+  // currentBlock = 2792944; // if need custom start block
+
   if (logSync100Time) console.time("sync");
   let count = 0;
   while (syncing) {
-    // if (currentBlock === 2001) return;
+    // if (currentBlock === 2792945) return; // if need custom end block
     // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
     // await sleep(4000);
     try {
@@ -83,6 +85,7 @@ export const startSync = async () => {
       }
     } catch (error) {
       console.error(`ERROR::Adding Block ${currentBlock}:: ${error}`);
+      break;
     }
   }
 };
