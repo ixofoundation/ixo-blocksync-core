@@ -89,8 +89,13 @@ export const startSync = async () => {
         currentBlock++;
       } else {
         count++;
+        // if count is 10, log that already on 10th attempt
         if (count === 10) {
           console.log(`Next block, 10th attempt: ${currentBlock}`);
+        }
+        // if count is more than 20, error out to indicate something might be wrong
+        if (count > 20) {
+          throw new Error("More than 20 attempts in a row, erroring...");
         }
         await sleep(1100);
       }
@@ -104,7 +109,7 @@ export const startSync = async () => {
 
       // if more than 5 errors in a row, exit
       if (errorCount > 5) {
-        console.error("Errors for more than 10 times in a row, exiting");
+        console.error("Errors for more than 10 times in a row, exiting...");
         throw error;
       }
     }
