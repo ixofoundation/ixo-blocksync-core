@@ -1,5 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { DATABASE_USE_SSL } from "../util/secrets";
+import { currentPool } from "../sync/sync_blocks";
 
 export const pool = new Pool({
   application_name: "Blocksync-core",
@@ -36,6 +37,14 @@ export const withTransaction = async (
     client.release();
     // console.log("executed transaction", { duration: Date.now() - start });
   }
+};
+
+/**
+ * Helper function to execute a query either using the global current pool or a new pool connection
+ */
+export const dbQuery = async (queryText: string, params: any[] = []) => {
+  const client = currentPool || pool;
+  return await client.query(queryText, params);
 };
 
 // helper function that manages connect to pool and release,

@@ -1,4 +1,4 @@
-import { withTransaction } from "./client";
+import { dbQuery } from "./client";
 
 export type BlockCore = {
   height: number;
@@ -53,31 +53,24 @@ FROM jsonb_to_recordset($1) AS ev("type" text, attributes jsonb[], "beginBlockEv
 
 export const insertBlock = async (block: BlockCore): Promise<void> => {
   try {
-    // do all the insertions in a single transaction
-    await withTransaction(async (client) => {
-      await client.query(insertBlockSql, [
-        block.height,
-        block.hash,
+    await dbQuery(insertBlockSql, [block.height, block.hash, block.time]);
+    if (block.transactions.length) {
+      await dbQuery(insertTransactionSql, [
+        JSON.stringify(block.transactions),
         block.time,
+        block.height,
       ]);
-      if (block.transactions.length) {
-        await client.query(insertTransactionSql, [
-          JSON.stringify(block.transactions),
-          block.time,
-          block.height,
-        ]);
-      }
-      if (block.messages.length) {
-        await client.query(insertMessageSql, [JSON.stringify(block.messages)]);
-      }
-      if (block.events.length) {
-        await client.query(insertEventSql, [
-          JSON.stringify(block.events),
-          block.time,
-          block.height,
-        ]);
-      }
-    });
+    }
+    if (block.messages.length) {
+      await dbQuery(insertMessageSql, [JSON.stringify(block.messages)]);
+    }
+    if (block.events.length) {
+      await dbQuery(insertEventSql, [
+        JSON.stringify(block.events),
+        block.time,
+        block.height,
+      ]);
+    }
   } catch (error) {
     throw error;
   }

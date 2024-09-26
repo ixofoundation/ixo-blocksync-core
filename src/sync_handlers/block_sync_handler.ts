@@ -31,7 +31,6 @@ export const syncBlock = async (
       events: events,
     });
   } catch (error) {
-    console.error("ERROR::syncBlock:: ", error);
-    // throw error;
+    throw error;
   }
 };

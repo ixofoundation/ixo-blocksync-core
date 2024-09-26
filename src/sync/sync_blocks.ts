@@ -6,12 +6,16 @@ import { utils } from "@ixo/impactxclient-sdk";
 import { sleep } from "../util/helpers";
 import { getChain, updateChain } from "../postgres/chain";
 import { getMemoryUsage } from "../util/memory";
+import { withTransaction } from "../postgres/client";
+import { PoolClient } from "pg";
 
 let syncing: boolean;
 
 const logIndexTime = false;
 const logFetchTime = false;
 const logSync100Time = true;
+
+export let currentPool: PoolClient | undefined;
 
 export const startSync = async () => {
   syncing = true;
@@ -26,10 +30,14 @@ export const startSync = async () => {
 
   if (logSync100Time) console.time("sync");
   let count = 0;
+  let errorCount = 0;
   while (syncing) {
+    currentPool = undefined;
+
     // if (currentBlock === 2792945) return; // if need custom end block
     // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
     // await sleep(4000);
+
     try {
       if (logFetchTime) console.time("fetch");
       const [block, txsEvent, blockTM] = await Promise.all([
@@ -54,20 +62,23 @@ export const startSync = async () => {
 
         const blockHeight = Number(block.block!.header!.height.low);
 
-        await Promise.all([
-          BlockSyncHandler.syncBlock(
-            blockHeight,
-            block.blockId!.hash!,
-            utils.proto.fromTimestamp(block.block!.header!.time!),
-            txsEvent.txResponses,
-            blockTM.beginBlockEvents as Event[],
-            blockTM.endBlockEvents as Event[]
-          ),
-          updateChain({
-            chainId: currentChain.chainId,
-            blockHeight: blockHeight,
-          }),
-        ]);
+        await withTransaction(async (client) => {
+          currentPool = client;
+          await Promise.all([
+            BlockSyncHandler.syncBlock(
+              blockHeight,
+              block.blockId!.hash!,
+              utils.proto.fromTimestamp(block.block!.header!.time!),
+              txsEvent.txResponses,
+              blockTM.beginBlockEvents as Event[],
+              blockTM.endBlockEvents as Event[]
+            ),
+            updateChain({
+              chainId: currentChain.chainId,
+              blockHeight: blockHeight,
+            }),
+          ]);
+        });
 
         if (blockHeight % 100 === 0) {
           console.log(`Synced Block ${blockHeight}`);
@@ -83,9 +94,19 @@ export const startSync = async () => {
         }
         await sleep(1100);
       }
+      errorCount = 0;
     } catch (error) {
+      errorCount++;
+
+      // if error, log error and sleep for 2 seconds, to attempt self healing and retry
       console.error(`ERROR::Adding Block ${currentBlock}:: ${error}`);
-      break;
+      await sleep(2000);
+
+      // if more than 5 errors in a row, exit
+      if (errorCount > 5) {
+        console.error("Errors for more than 10 times in a row, exiting");
+        throw error;
+      }
     }
   }
 };
