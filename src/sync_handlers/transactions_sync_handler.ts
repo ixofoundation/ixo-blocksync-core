@@ -1,39 +1,40 @@
-import { Prisma } from "@prisma/client";
 import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
 import { decodeMessage, decodeTransaction } from "../util/proto";
+import { MessageCore, TransactionCore } from "../postgres/block";
 
-export const syncTransactions = (
-  transactionResponses: TxResponse[],
-  timestamp: Date
-) => {
-  return transactionResponses
-    .map((tr) => {
-      const transaction = decodeTransaction(tr);
-      if (!transaction) return;
+export const syncTransactions = (transactionResponses: TxResponse[]) => {
+  const allMessages: MessageCore[] = [];
+  const allTransactions: TransactionCore[] = [];
 
-      let messages: Prisma.TransactionCoreUncheckedCreateInput =
-        transaction.body.messages
-          .map((m) => {
-            const value = decodeMessage(m);
-            if (!value) return;
+  for (const tr of transactionResponses) {
+    const transaction = decodeTransaction(tr);
 
-            return {
-              typeUrl: m.typeUrl,
-              value: value,
-            };
-          })
-          .filter((m) => !!m);
+    if (transaction) {
+      // Extract and map messages to their decoded form
+      for (const m of transaction.body.messages) {
+        const value = decodeMessage(m);
 
-      return {
+        // Only add valid decoded messages to allMessages
+        if (value) {
+          allMessages.push({
+            typeUrl: m.typeUrl,
+            value,
+            transactionHash: tr.txhash,
+          });
+        }
+      }
+
+      // Add the transaction if there are valid messages
+      allTransactions.push({
         hash: tr.txhash,
         code: tr.code,
         fee: transaction.authInfo.fee,
         memo: transaction.body.memo,
         gasUsed: tr.gasUsed.toString(),
         gasWanted: tr.gasWanted.toString(),
-        time: timestamp,
-        messages: { createMany: { data: messages } },
-      };
-    })
-    .filter((t) => !!t);
+      });
+    }
+  }
+
+  return { allMessages, allTransactions };
 };

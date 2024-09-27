@@ -1,3 +1,7 @@
+-- INITIALIZATION SCRIPT, creating all tables and indexes
+
+-- Up Migration
+
 -- CreateTable
 CREATE TABLE "ChainCore" (
     "chainId" TEXT NOT NULL,
@@ -72,3 +76,5 @@ ALTER TABLE "MessageCore" ADD CONSTRAINT "MessageCore_transactionHash_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "EventCore" ADD CONSTRAINT "EventCore_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "BlockCore"("height") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Down Migration

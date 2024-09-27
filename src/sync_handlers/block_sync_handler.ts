@@ -1,9 +1,9 @@
-import { prisma } from "../prisma/prisma_client";
 import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
 import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
 import { upperHexFromUint8Array } from "../util/helpers";
 import { syncEvents } from "./event_sync_handler";
 import { syncTransactions } from "./transactions_sync_handler";
+import { insertBlock } from "../postgres/block";
 
 export const syncBlock = async (
   blockHeight: number,
@@ -13,27 +13,24 @@ export const syncBlock = async (
   beginBlockEvents: Event[],
   endBlockEvents: Event[]
 ) => {
-  const events: any = syncEvents(
+  const events = syncEvents(
     beginBlockEvents,
     transactionResponses.flatMap((txRes) => txRes.events),
-    endBlockEvents,
-    timestamp
+    endBlockEvents
   );
-  const transactions: any = syncTransactions(transactionResponses, timestamp);
+  const { allMessages, allTransactions } =
+    syncTransactions(transactionResponses);
 
   try {
-    await prisma.blockCore.create({
-      data: {
-        height: blockHeight,
-        hash: upperHexFromUint8Array(blockHash),
-        time: timestamp,
-        transactions: { create: transactions },
-        events: { createMany: { data: events } },
-      },
+    await insertBlock({
+      height: blockHeight,
+      hash: upperHexFromUint8Array(blockHash),
+      time: timestamp,
+      transactions: allTransactions,
+      messages: allMessages,
+      events: events,
     });
-    return;
   } catch (error) {
-    console.error("syncBlock: ", error);
-    return;
+    throw error;
   }
 };

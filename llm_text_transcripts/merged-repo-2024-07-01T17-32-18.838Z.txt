@@ -1,0 +1,1557 @@
+
+/.EDITORCONFIG CODE IS BELOW
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+
+/.ENV.EXAMPLE CODE IS BELOW
+PORT="8081"
+# express trust proxy config for if you are using a reverse proxy
+TRUST_PROXY=1
+SENTRYDSN=
+RPC=
+DATABASE_URL=postgresql://username:password@blocksync-db:5432/Blocksync-core?schema=public
+# whether to use ssl for the database connection or not, for localhost db disable this
+# 1 = true, 0 = false
+DATABASE_USE_SSL=0
+
+# whether to migrate the database programatically or not, if set to true, the database will be migrated programatically
+# according to postgres/migrations, for prod environtments where dont have direct db access or dont want to connect to db directly.
+# Please note this has its own limitations, if this is used please dont modify the db schema manually at all, only rely on the
+# programatic migrations.
+# 1 = true, 0 = false
+MIGRATE_DB_PROGRAMATICALLY=1
+
+
+/.GITHUB/WORKFLOWS/NODE-CI-BUILD.YML CODE IS BELOW
+name: Build and Release
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build-and-release:
+    uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-build.yml@main
+    with:
+      commit_sha: ${{ github.sha }}
+    secrets: inherit
+
+/.GITHUB/WORKFLOWS/NODE-CI-PR.YML CODE IS BELOW
+name: Pull Request Build and Test
+on:
+  pull_request:
+
+jobs:
+  call-ci-workflow:
+    uses: ixofoundation/ixo-github-actions/.github/workflows/node-ci-pr.yml@main
+
+/.RELEASERC.JSON CODE IS BELOW
+{
+  "branches": [
+    "main",
+    {
+      "name": "develop",
+      "channel": "alpha",
+      "prerelease": true
+    },
+    {
+      "name": "test",
+      "channel": "beta",
+      "prerelease": true
+    }
+  ],
+  "ci": true,
+  "preset": "conventionalcommits",
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          { "breaking": true, "release": "major" },
+          { "type": "feat", "release": "minor" },
+          { "type": "fix", "release": "patch" },
+          { "type": "perf", "release": "patch" },
+          { "type": "build", "release": "patch" },
+          { "scope": "security", "release": "patch" },
+          { "type": "chore", "release": false },
+          { "type": "ci", "release": false },
+          { "type": "docs", "release": false },
+          { "type": "refactor", "release": false },
+          { "type": "revert", "release": false },
+          { "type": "style", "release": false },
+          { "type": "test", "release": false },
+          { "scope": "no-release", "release": false },
+          { "scope": "release", "release": "patch" }
+        ],
+        "presetConfig": true
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "presetConfig": true
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n${nextRelease.notes}"
+      }
+    ],
+    "@semantic-release/github"
+  ]
+} 
+
+
+/DOCKERFILE CODE IS BELOW
+FROM --platform=linux/amd64 node:18.17.0
+
+# Create app directory
+RUN mkdir /usr/src/app
+WORKDIR /usr/src/app
+
+# Install app dependencies
+COPY package.json yarn.lock ./
+RUN yarn --pure-lockfile --production && yarn cache clean
+
+# Copy rest of files
+COPY . .
+
+EXPOSE 8080
+
+# Start
+CMD ["yarn", "start"]
+
+
+/LICENSE CODE IS BELOW
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1.  Definitions.
+
+    "License" shall mean the terms and conditions for use, reproduction,
+    and distribution as defined by Sections 1 through 9 of this document.
+
+    "Licensor" shall mean the copyright owner or entity authorized by
+    the copyright owner that is granting the License.
+
+    "Legal Entity" shall mean the union of the acting entity and all
+    other entities that control, are controlled by, or are under common
+    control with that entity. For the purposes of this definition,
+    "control" means (i) the power, direct or indirect, to cause the
+    direction or management of such entity, whether by contract or
+    otherwise, or (ii) ownership of fifty percent (50%) or more of the
+    outstanding shares, or (iii) beneficial ownership of such entity.
+
+    "You" (or "Your") shall mean an individual or Legal Entity
+    exercising permissions granted by this License.
+
+    "Source" form shall mean the preferred form for making modifications,
+    including but not limited to software source code, documentation
+    source, and configuration files.
+
+    "Object" form shall mean any form resulting from mechanical
+    transformation or translation of a Source form, including but
+    not limited to compiled object code, generated documentation,
+    and conversions to other media types.
+
+    "Work" shall mean the work of authorship, whether in Source or
+    Object form, made available under the License, as indicated by a
+    copyright notice that is included in or attached to the work
+    (an example is provided in the Appendix below).
+
+    "Derivative Works" shall mean any work, whether in Source or Object
+    form, that is based on (or derived from) the Work and for which the
+    editorial revisions, annotations, elaborations, or other modifications
+    represent, as a whole, an original work of authorship. For the purposes
+    of this License, Derivative Works shall not include works that remain
+    separable from, or merely link (or bind by name) to the interfaces of,
+    the Work and Derivative Works thereof.
+
+    "Contribution" shall mean any work of authorship, including
+    the original version of the Work and any modifications or additions
+    to that Work or Derivative Works thereof, that is intentionally
+    submitted to Licensor for inclusion in the Work by the copyright owner
+    or by an individual or Legal Entity authorized to submit on behalf of
+    the copyright owner. For the purposes of this definition, "submitted"
+    means any form of electronic, verbal, or written communication sent
+    to the Licensor or its representatives, including but not limited to
+    communication on electronic mailing lists, source code control systems,
+    and issue tracking systems that are managed by, or on behalf of, the
+    Licensor for the purpose of discussing and improving the Work, but
+    excluding communication that is conspicuously marked or otherwise
+    designated in writing by the copyright owner as "Not a Contribution."
+
+    "Contributor" shall mean Licensor and any individual or Legal Entity
+    on behalf of whom a Contribution has been received by Licensor and
+    subsequently incorporated within the Work.
+
+2.  Grant of Copyright License. Subject to the terms and conditions of
+    this License, each Contributor hereby grants to You a perpetual,
+    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+    copyright license to reproduce, prepare Derivative Works of,
+    publicly display, publicly perform, sublicense, and distribute the
+    Work and such Derivative Works in Source or Object form.
+
+3.  Grant of Patent License. Subject to the terms and conditions of
+    this License, each Contributor hereby grants to You a perpetual,
+    worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+    (except as stated in this section) patent license to make, have made,
+    use, offer to sell, sell, import, and otherwise transfer the Work,
+    where such license applies only to those patent claims licensable
+    by such Contributor that are necessarily infringed by their
+    Contribution(s) alone or by combination of their Contribution(s)
+    with the Work to which such Contribution(s) was submitted. If You
+    institute patent litigation against any entity (including a
+    cross-claim or counterclaim in a lawsuit) alleging that the Work
+    or a Contribution incorporated within the Work constitutes direct
+    or contributory patent infringement, then any patent licenses
+    granted to You under this License for that Work shall terminate
+    as of the date such litigation is filed.
+
+4.  Redistribution. You may reproduce and distribute copies of the
+    Work or Derivative Works thereof in any medium, with or without
+    modifications, and in Source or Object form, provided that You
+    meet the following conditions:
+
+    (a) You must give any other recipients of the Work or
+    Derivative Works a copy of this License; and
+
+    (b) You must cause any modified files to carry prominent notices
+    stating that You changed the files; and
+
+    (c) You must retain, in the Source form of any Derivative Works
+    that You distribute, all copyright, patent, trademark, and
+    attribution notices from the Source form of the Work,
+    excluding those notices that do not pertain to any part of
+    the Derivative Works; and
+
+    (d) If the Work includes a "NOTICE" text file as part of its
+    distribution, then any Derivative Works that You distribute must
+    include a readable copy of the attribution notices contained
+    within such NOTICE file, excluding those notices that do not
+    pertain to any part of the Derivative Works, in at least one
+    of the following places: within a NOTICE text file distributed
+    as part of the Derivative Works; within the Source form or
+    documentation, if provided along with the Derivative Works; or,
+    within a display generated by the Derivative Works, if and
+    wherever such third-party notices normally appear. The contents
+    of the NOTICE file are for informational purposes only and
+    do not modify the License. You may add Your own attribution
+    notices within Derivative Works that You distribute, alongside
+    or as an addendum to the NOTICE text from the Work, provided
+    that such additional attribution notices cannot be construed
+    as modifying the License.
+
+    You may add Your own copyright statement to Your modifications and
+    may provide additional or different license terms and conditions
+    for use, reproduction, or distribution of Your modifications, or
+    for any such Derivative Works as a whole, provided Your use,
+    reproduction, and distribution of the Work otherwise complies with
+    the conditions stated in this License.
+
+5.  Submission of Contributions. Unless You explicitly state otherwise,
+    any Contribution intentionally submitted for inclusion in the Work
+    by You to the Licensor shall be under the terms and conditions of
+    this License, without any additional terms or conditions.
+    Notwithstanding the above, nothing herein shall supersede or modify
+    the terms of any separate license agreement you may have executed
+    with Licensor regarding such Contributions.
+
+6.  Trademarks. This License does not grant permission to use the trade
+    names, trademarks, service marks, or product names of the Licensor,
+    except as required for reasonable and customary use in describing the
+    origin of the Work and reproducing the content of the NOTICE file.
+
+7.  Disclaimer of Warranty. Unless required by applicable law or
+    agreed to in writing, Licensor provides the Work (and each
+    Contributor provides its Contributions) on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+    implied, including, without limitation, any warranties or conditions
+    of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+    PARTICULAR PURPOSE. You are solely responsible for determining the
+    appropriateness of using or redistributing the Work and assume any
+    risks associated with Your exercise of permissions under this License.
+
+8.  Limitation of Liability. In no event and under no legal theory,
+    whether in tort (including negligence), contract, or otherwise,
+    unless required by applicable law (such as deliberate and grossly
+    negligent acts) or agreed to in writing, shall any Contributor be
+    liable to You for damages, including any direct, indirect, special,
+    incidental, or consequential damages of any character arising as a
+    result of this License or out of the use or inability to use the
+    Work (including but not limited to damages for loss of goodwill,
+    work stoppage, computer failure or malfunction, or any and all
+    other commercial damages or losses), even if such Contributor
+    has been advised of the possibility of such damages.
+
+9.  Accepting Warranty or Additional Liability. While redistributing
+    the Work or Derivative Works thereof, You may choose to offer,
+    and charge a fee for, acceptance of support, warranty, indemnity,
+    or other liability obligations and/or rights consistent with this
+    License. However, in accepting such obligations, You may act only
+    on Your own behalf and on Your sole responsibility, not on behalf
+    of any other Contributor, and only if You agree to indemnify,
+    defend, and hold each Contributor harmless for any liability
+    incurred by, or claims asserted against, such Contributor by reason
+    of your accepting any such warranty or additional liability.
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+Copyright 2023 Ixo
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+/README.MD CODE IS BELOW
+# ixo-blocksync-core
+
+[![ixo](https://img.shields.io/badge/ixo-project-blue)](https://ixo.foundation)
+[![GitHub](https://img.shields.io/github/stars/ixofoundation/jambo?style=social)](https://github.com/ixofoundation/ixo-blocksync-core)
+![GitHub repo size](https://img.shields.io/github/repo-size/ixofoundation/ixo-blocksync-core)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ixofoundation/jambo/blob/main/LICENSE)
+
+[![Twitter](https://img.shields.io/twitter/follow/ixo_impact?style=social)](https://twitter.com/ixoworld)
+[![Medium](https://img.shields.io/badge/Medium-ixo-green)](https://ixoworld.medium.com/)
+
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB)![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)![GraphQL](https://img.shields.io/badge/-GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)
+
+Syncs the core info from an ixo blockchain to an instance of PostgreSQL. The core info consists of the Block data, Transactions, Messages and Events.
+
+> For now this server doesnt expose any API interfaces as it's purpose is only to generate and keep up to date the ixo-blocksync-core database, we plan on adding API interfaces in the near future
+
+## Run
+
+### From Source
+
+Requirements
+
+- [PostgreSQL](https://www.postgresql.org/download/)
+
+```bash
+git clone https://github.com/ixofoundation/ixo-blocksync-core.git
+cd ixo-blocksync-core/
+```
+
+Copy `.env.example` to `.env` and configure. If this step is skipped, ixo-blocksync-core will use `.env.example` as the configuration by default.
+
+- Create a database called Blocksync-core
+
+```bash
+yarn install
+yarn start
+```
+
+---
+
+### Using Docker (with Compose)
+
+Requirements
+
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+```bash
+git clone https://github.com/ixofoundation/ixo-blocksync-core.git
+cd ixo-blocksync-core/
+```
+
+Copy `.env.example` to `.env` and configure. If this step is skipped, ixo-blocksync will use `.env.example` as the configuration by default.
+Don't use quotations when asign env vars for docker  
+Create a role(e.g. app_user) in the DB for postgress to work.
+
+```bash
+docker build -t ixofoundation/ixo-blocksync-core:latest .
+docker compose up -d
+```
+
+
+/DOCKER-COMPOSE.YML CODE IS BELOW
+version: "3.6"
+services:
+  blocksync-core:
+    container_name: blocksync-core
+    image: ghcr.io/ixofoundation/ixo-blocksync-core:latest
+    env_file: .env
+    restart: always
+    ports:
+      - 8080:8080
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+    depends_on:
+      - blocksync-core-db
+
+  blocksync-core-db:
+    container_name: blocksync-core-db
+    image: postgres:12.12
+    restart: always
+    environment:
+      - POSTGRES_DB=Blocksync-core
+      - POSTGRES_PASSWORD=postgrespw
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+
+
+/PACKAGE.JSON CODE IS BELOW
+{
+  "name": "ixo-blocksync-core",
+  "version": "0.1.0-develop.5",
+  "description": "Syncs all the core info from an ixo blockchain to an instance of PostgresQL",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node build/dist/index.js",
+    "build": "tsc",
+    "dev": "npx ts-node src/index.ts",
+    "docs-gen": "npx typedoc src/* src/*/*",
+    "migrate:up": "node-pg-migrate up -m ./src/postgres/migrations",
+    "migrate:down": "node-pg-migrate down  -m ./src/postgres/migrations",
+    "migrate:redo": "node-pg-migrate redo  -m ./src/postgres/migrations",
+    "migrate:create": "node-pg-migrate create  --migration-filename-format utc --migration-file-language sql  -m ./src/postgres/migrations"
+  },
+  "repository": "https://github.com/ixofoundation/ixo-blocksync-core",
+  "keywords": [
+    "blockchain"
+  ],
+  "author": "Ixo Foundation",
+  "license": "Apache 2",
+  "dependencies": {
+    "@ixo/impactxclient-sdk": "1.2.0",
+    "@sentry/node": "7.36.0",
+    "@sentry/tracing": "7.36.0",
+    "body-parser": "1.20.1",
+    "compression": "1.7.4",
+    "dotenv": "16.0.3",
+    "express": "4.18.2",
+    "express-rate-limit": "6.7.0",
+    "helmet": "6.0.1",
+    "http": "0.0.0",
+    "log-timestamp": "0.3.0",
+    "node-pg-migrate": "7.0.0",
+    "pg": "8.11.5",
+    "ts-node": "10.9.1",
+    "typescript": "4.9.5"
+  },
+  "devDependencies": {
+    "@semantic-release/git": "10.0.1",
+    "@types/compression": "1.7.2",
+    "@types/express": "4.17.17",
+    "@types/node": "18.13.0",
+    "@types/pg": "8.11.5",
+    "conventional-changelog-conventionalcommits": "7.0.2",
+    "semantic-release": "22",
+    "typedoc": "0.23.24"
+  }
+}
+
+
+/SRC/APP.TS CODE IS BELOW
+import express from "express";
+import bodyParser from "body-parser";
+import compression from "compression";
+import * as Sentry from "@sentry/node";
+import { SENTRYDSN, TRUST_PROXY } from "./util/secrets";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minutes
+  max: 10, // Limit each IP to 100 requests per `window`
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: "Too many requests from this IP, please try again after 1 minutes",
+});
+
+export const app = express();
+
+app.set("trust proxy", TRUST_PROXY);
+Sentry.init({ dsn: SENTRYDSN, tracesSampleRate: 1.0 });
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(compression());
+app.use(Sentry.Handlers.requestHandler());
+app.use(
+  Sentry.Handlers.errorHandler({
+    shouldHandleError(error) {
+      return !!error;
+    },
+  })
+);
+app.use(limiter);
+app.use(helmet());
+
+app.get("/", (req, res) => {
+  res.send("API is Running");
+});
+
+// app.get("/ip", (request, response) =>
+//   response.send({
+//     ips: request.ips,
+//     ip: request.ip,
+//     protocol: request.protocol,
+//     headers: request.headers["x-forwarded-for"],
+//   })
+// );
+
+
+/SRC/INDEX.TS CODE IS BELOW
+require("log-timestamp");
+require("dotenv").config();
+
+import "./util/long";
+import { app } from "./app";
+import http from "http";
+import * as SyncBlocks from "./sync/sync_blocks";
+import { DATABASE_URL, PORT, MIGRATE_DB_PROGRAMATICALLY } from "./util/secrets";
+import * as SyncChain from "./sync/sync_chain";
+import { postgresMigrate } from "./postgres/migrations";
+
+(async () => {
+  // first apply db migrations if env var set, for prod dbs where no access to shell
+  if (MIGRATE_DB_PROGRAMATICALLY) {
+    console.log("MIGRATE_DB_PROGRAMATICALLY: ", MIGRATE_DB_PROGRAMATICALLY);
+    await postgresMigrate(DATABASE_URL || "");
+  }
+
+  // server setup and start logic
+  SyncChain.syncChain().then(() => SyncBlocks.startSync());
+
+  const server = http.createServer(app);
+  server.listen(PORT, () => console.log(`Listening on ${PORT}`));
+})();
+
+
+/SRC/POSTGRES/README.MD CODE IS BELOW
+# PostgresQL
+
+This guide outlines the setup and usage of PostgreSQL for the project. It covers connecting to the database, executing raw SQL queries with transactions, and managing database migrations.
+
+## Connecting to the Database
+
+In order to use the setup please ensure to add the following environment variable to your `.env` file, replacing `<your_database_url>` with the actual connection string for your PostgreSQL database:
+
+```
+DATABASE_URL=<your_database_url>
+```
+
+The `src/postgres/client.ts` file provides helper functions for connecting to the PostgreSQL database and managing transactions.
+The `withTransaction` function simplifies executing queries within a single transaction and also a `ROLLBACK` in case an error occurrs. Below is an example:
+
+```ts
+const insertBlockSql = `
+INSERT INTO "BlockCore" (height, hash, "time")
+VALUES ($1, $2, $3);
+`;
+const insertTransactionSql = `
+INSERT INTO "TransactionCore" (hash, code, fee, "gasUsed", "gasWanted", memo, "time", "blockHeight")
+SELECT tr.hash, tr.code, tr.fee, tr."gasUsed", tr."gasWanted", tr.memo, $2, $3
+FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text, "gasWanted" text, memo text);
+`;
+export const insertBlock = async (block: BlockCore): Promise<void> => {
+  try {
+    // do all the insertions in a single transaction
+    await withTransaction(async (client) => {
+      await client.query(insertBlockSql, [
+        block.height,
+        block.hash,
+        block.time,
+      ]);
+      if (block.transactions.length) {
+        await client.query(insertTransactionSql, [
+          JSON.stringify(block.transactions),
+          block.time,
+          block.height,
+        ]);
+      }
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+```
+
+You can execute raw SQL queries using the connected client object. Remember to escape user-provided data to prevent SQL injection vulnerabilities. Below is an example:
+
+```ts
+const getChainSql = `
+SELECT * FROM "ChainCore" WHERE "chainId" = $1
+`;
+export const getChain = async (chainId: string): Promise<Chain | undefined> => {
+  try {
+    const res = await pool.query(getChainSql, [chainId]);
+    return res.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+```
+
+## Database Migrations
+
+The `src/postgres/migrations` folder contains migration scripts for managing your database schema changes. These scripts are executed programmatically using the `node-pg-migrate` package.
+
+The `MIGRATE_DB_PROGRAMMATICALLY` environment variable controls programmatic migration execution. Set it to true in your `.env` file to enable automatic migrations on application startup.
+
+### Migration Scripts
+
+- Each migration script should be named with a utc string prefix and migration name (e.g. 00000000000000000_init.sql). Please use the provided `package.json` script `migrate:create` to create the files eg: `yarn migrate:create my_migration`
+- The script should contain SQL statements for creating/altering tables, indexes, and constraints.
+- Up and down migrations are defined within the script using comments:
+
+```sql
+-- ... Quick summary for migration on top
+
+-- Up Migration
+-- ... SQL statements for creating tables ...
+
+-- Down Migration
+-- ... SQL statements for dropping tables ...
+```
+
+### Running Migrations
+
+The `package.json` file includes scripts for managing migrations:
+
+- `migrate:up`: Applies all pending up migrations.
+- `migrate:down`: Reverts the latest migration.
+- `migrate:redo`: Re-applies the latest migration.
+- `migrate:create`: Creates a new migration file with a timestamp prefix.
+
+### Programatic Migration
+
+The `postgresMigrate` function in `src/postgres/migrations` allows programmatic execution of migrations at startup if the `MIGRATE_DB_PROGRAMMATICALLY` environment variable is set. This is setup for those who dont have access to the db directly through cli, but is is also the preferred method for migrations on new releases as it doesnt need any intervention that could go wrong.
+
+Please don't try to do any manual migrations and have this enabled as it will fail on server startup and the server tries to run the migrations!
+
+## Conclusion
+
+This guide provides a basic overview of using PostgreSQL with this project. Refer to the provided code examples for further details on connecting, executing queries, and managing migrations. Remember to consult the PostgreSQL documentation for more advanced features and functionalities.
+
+
+/SRC/POSTGRES/BLOCK.TS CODE IS BELOW
+import { withTransaction } from "./client";
+
+export type BlockCore = {
+  height: number;
+  time: Date;
+  hash: string;
+  transactions: TransactionCore[];
+  messages: MessageCore[];
+  events: EventCore[];
+};
+
+export type TransactionCore = {
+  hash: string;
+  code: number;
+  fee: any; // JSON
+  gasUsed: string;
+  gasWanted: string;
+  memo: string;
+};
+
+export type MessageCore = {
+  typeUrl: string;
+  value: any; // JSON
+  transactionHash: string;
+};
+
+export type EventCore = {
+  type: string;
+  attributes: any[]; // JSON
+  beginBlockEvent: boolean;
+  endBlockEvent: boolean;
+};
+
+const insertBlockSql = `
+INSERT INTO "BlockCore" (height, hash, "time")
+VALUES ($1, $2, $3);
+`;
+const insertTransactionSql = `
+INSERT INTO "TransactionCore" (hash, code, fee, "gasUsed", "gasWanted", memo, "time", "blockHeight")
+SELECT tr.hash, tr.code, tr.fee, tr."gasUsed", tr."gasWanted", tr.memo, $2, $3
+FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text, "gasWanted" text, memo text);
+`;
+const insertMessageSql = `
+INSERT INTO "MessageCore" ("typeUrl", value, "transactionHash")
+SELECT msg."typeUrl", msg.value, msg."transactionHash"
+FROM jsonb_to_recordset($1) AS msg("typeUrl" text, value jsonb, "transactionHash" text);
+`;
+const insertEventSql = `
+INSERT INTO "EventCore" ("type", attributes, "beginBlockEvent", "endBlockEvent", "time", "blockHeight")
+SELECT ev.type, ev.attributes, ev."beginBlockEvent", ev."endBlockEvent", $2, $3
+FROM jsonb_to_recordset($1) AS ev("type" text, attributes jsonb[], "beginBlockEvent" boolean, "endBlockEvent" boolean);
+`;
+
+export const insertBlock = async (block: BlockCore): Promise<void> => {
+  try {
+    // do all the insertions in a single transaction
+    await withTransaction(async (client) => {
+      await client.query(insertBlockSql, [
+        block.height,
+        block.hash,
+        block.time,
+      ]);
+      if (block.transactions.length) {
+        await client.query(insertTransactionSql, [
+          JSON.stringify(block.transactions),
+          block.time,
+          block.height,
+        ]);
+      }
+      if (block.messages.length) {
+        await client.query(insertMessageSql, [JSON.stringify(block.messages)]);
+      }
+      if (block.events.length) {
+        await client.query(insertEventSql, [
+          JSON.stringify(block.events),
+          block.time,
+          block.height,
+        ]);
+      }
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+/SRC/POSTGRES/CHAIN.TS CODE IS BELOW
+import { pool } from "./client";
+
+export type Chain = {
+  chainId: string;
+  blockHeight: number;
+};
+
+const getChainSql = `
+SELECT * FROM "ChainCore" WHERE "chainId" = $1;
+`;
+export const getChain = async (chainId: string): Promise<Chain | undefined> => {
+  try {
+    const res = await pool.query(getChainSql, [chainId]);
+    return res.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
+const createChainSql = `
+INSERT INTO "ChainCore" ("chainId", "blockHeight") VALUES ($1, $2) RETURNING *;
+`;
+export const createChain = async (chainDoc: Chain): Promise<Chain> => {
+  try {
+    const res = await pool.query(createChainSql, [
+      chainDoc.chainId,
+      chainDoc.blockHeight,
+    ]);
+    return res.rows[0];
+  } catch (error) {
+    throw error;
+  }
+};
+
+const updateChainSql = `
+UPDATE "ChainCore" SET "blockHeight" = $2 WHERE "chainId" = $1;
+`;
+export const updateChain = async (chainDoc: Chain): Promise<void> => {
+  try {
+    await pool.query(updateChainSql, [chainDoc.chainId, chainDoc.blockHeight]);
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+/SRC/POSTGRES/CLIENT.TS CODE IS BELOW
+import { Pool, PoolClient } from "pg";
+import { DATABASE_USE_SSL } from "../util/secrets";
+
+export const pool = new Pool({
+  application_name: "Blocksync-core",
+  connectionString: process.env.DATABASE_URL,
+  // maximum number of clients the pool should contain
+  // by default this is set to 10.
+  // max: 20,
+  // number of milliseconds a client must sit idle in the pool and not be checked out
+  // before it is disconnected from the backend and discarded
+  // default is 10000 (10 seconds) - set to 0 to disable auto-disconnection of idle clients
+  // idleTimeoutMillis: 10000,
+  // number of milliseconds to wait before timing out when connecting a new client
+  // by default this is 0 which means no timeout
+  connectionTimeoutMillis: 2000,
+  ...(DATABASE_USE_SSL && { ssl: { rejectUnauthorized: false } }), // Use SSL (recommended
+});
+
+// helper function that manages connection transaction start and commit and rollback
+// on fail, user can just pass a function that takes a client as argument
+export const withTransaction = async (
+  fn: (client: PoolClient) => Promise<any>
+) => {
+  // const start = Date.now();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const res = await fn(client);
+    await client.query("COMMIT");
+    return res;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+    // console.log("executed transaction", { duration: Date.now() - start });
+  }
+};
+
+// helper function that manages connect to pool and release,
+// user can just pass a function that takes a client as argument
+export const withQuery = async (fn: (client: any) => Promise<any>) => {
+  // const start = Date.now();
+  const client = await pool.connect();
+  try {
+    return await fn(client);
+  } catch (error) {
+    throw error;
+  } finally {
+    client.release();
+    // console.log("executed query", { duration: Date.now() - start });
+  }
+};
+
+
+/SRC/POSTGRES/MIGRATIONS/00000000000000000_INIT.SQL CODE IS BELOW
+-- INITIALIZATION SCRIPT, creating all tables and indexes
+
+-- Up Migration
+
+-- CreateTable
+CREATE TABLE "ChainCore" (
+    "chainId" TEXT NOT NULL,
+    "blockHeight" INTEGER NOT NULL,
+
+    CONSTRAINT "ChainCore_pkey" PRIMARY KEY ("chainId")
+);
+
+-- CreateTable
+CREATE TABLE "BlockCore" (
+    "height" INTEGER NOT NULL,
+    "hash" TEXT NOT NULL,
+    "time" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "BlockCore_pkey" PRIMARY KEY ("height")
+);
+
+-- CreateTable
+CREATE TABLE "TransactionCore" (
+    "hash" TEXT NOT NULL,
+    "code" INTEGER NOT NULL,
+    "fee" JSONB NOT NULL,
+    "gasUsed" TEXT NOT NULL,
+    "gasWanted" TEXT NOT NULL,
+    "time" TIMESTAMP(3) NOT NULL,
+    "blockHeight" INTEGER NOT NULL,
+    "memo" TEXT NOT NULL DEFAULT '',
+
+    CONSTRAINT "TransactionCore_pkey" PRIMARY KEY ("hash")
+);
+
+-- CreateTable
+CREATE TABLE "MessageCore" (
+    "id" SERIAL NOT NULL,
+    "typeUrl" TEXT NOT NULL,
+    "value" JSONB NOT NULL,
+    "transactionHash" TEXT NOT NULL,
+
+    CONSTRAINT "MessageCore_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "EventCore" (
+    "id" SERIAL NOT NULL,
+    "type" TEXT NOT NULL,
+    "attributes" JSONB[],
+    "time" TIMESTAMP(3) NOT NULL,
+    "beginBlockEvent" BOOLEAN NOT NULL DEFAULT false,
+    "endBlockEvent" BOOLEAN NOT NULL DEFAULT false,
+    "blockHeight" INTEGER NOT NULL,
+
+    CONSTRAINT "EventCore_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlockCore_hash_key" ON "BlockCore"("hash");
+
+-- CreateIndex
+CREATE INDEX "TransactionCore_blockHeight_idx" ON "TransactionCore"("blockHeight");
+
+-- CreateIndex
+CREATE INDEX "MessageCore_transactionHash_idx" ON "MessageCore"("transactionHash");
+
+-- CreateIndex
+CREATE INDEX "EventCore_blockHeight_idx" ON "EventCore"("blockHeight");
+
+-- AddForeignKey
+ALTER TABLE "TransactionCore" ADD CONSTRAINT "TransactionCore_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "BlockCore"("height") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MessageCore" ADD CONSTRAINT "MessageCore_transactionHash_fkey" FOREIGN KEY ("transactionHash") REFERENCES "TransactionCore"("hash") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "EventCore" ADD CONSTRAINT "EventCore_blockHeight_fkey" FOREIGN KEY ("blockHeight") REFERENCES "BlockCore"("height") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Down Migration
+
+
+/SRC/POSTGRES/MIGRATIONS.TS CODE IS BELOW
+import pg_migrate from "node-pg-migrate";
+import { DATABASE_USE_SSL } from "../util/secrets";
+
+export async function postgresMigrate(databaseUrl: string): Promise<void> {
+  await pg_migrate({
+    dir: "src/postgres/migrations",
+    direction: "up",
+    migrationsTable: "pgmigrations",
+    databaseUrl: {
+      connectionString: databaseUrl,
+      ...(DATABASE_USE_SSL && { ssl: { rejectUnauthorized: false } }), // Use SSL (recommended
+    },
+  });
+}
+
+
+/SRC/SYNC/SYNC_BLOCKS.TS CODE IS BELOW
+import * as Proto from "../util/proto";
+import * as BlockSyncHandler from "../sync_handlers/block_sync_handler";
+import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
+import { currentChain } from "./sync_chain";
+import { utils } from "@ixo/impactxclient-sdk";
+import { sleep } from "../util/helpers";
+import { getChain, updateChain } from "../postgres/chain";
+import { getMemoryUsage } from "../util/memory";
+
+let syncing: boolean;
+
+const logIndexTime = false;
+const logFetchTime = false;
+const logSync100Time = true;
+
+export const startSync = async () => {
+  syncing = true;
+
+  let currentBlock = (await getChain(currentChain.chainId))?.blockHeight || 1;
+  console.log(`Starting Syncing at Block ${currentBlock}`);
+
+  // if already has synced, start from next block
+  if (currentBlock !== 1) currentBlock++;
+
+  // currentBlock = 2792944; // if need custom start block
+
+  if (logSync100Time) console.time("sync");
+  let count = 0;
+  while (syncing) {
+    // if (currentBlock === 2792945) return; // if need custom end block
+    // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
+    // await sleep(4000);
+    try {
+      if (logFetchTime) console.time("fetch");
+      const [block, txsEvent, blockTM] = await Promise.all([
+        Proto.getBlockbyHeight(currentBlock),
+        Proto.getTxsEvent(currentBlock),
+        Proto.getTMBlockbyHeight(currentBlock),
+      ]);
+      if (logFetchTime) console.timeEnd("fetch");
+
+      if (block && txsEvent && blockTM) {
+        count = 0;
+        if (logIndexTime) console.time("index");
+        // if block and events is not null, check if block has txs and then if events has
+        // no trx, means abci layer is behind tendermint layer, wait 1 seconds and try again
+        if (block.block?.data?.txs.length && !txsEvent.txs.length) {
+          console.log(
+            "ABCI Layer behind Tendermint Layer, waiting 1 seconds and trying again"
+          );
+          await sleep(1000);
+          continue;
+        }
+
+        const blockHeight = Number(block.block!.header!.height.low);
+
+        await Promise.all([
+          BlockSyncHandler.syncBlock(
+            blockHeight,
+            block.blockId!.hash!,
+            utils.proto.fromTimestamp(block.block!.header!.time!),
+            txsEvent.txResponses,
+            blockTM.beginBlockEvents as Event[],
+            blockTM.endBlockEvents as Event[]
+          ),
+          updateChain({
+            chainId: currentChain.chainId,
+            blockHeight: blockHeight,
+          }),
+        ]);
+
+        if (blockHeight % 100 === 0) {
+          console.log(`Synced Block ${blockHeight}`);
+          if (logSync100Time) console.timeLog("sync");
+        }
+
+        if (logIndexTime) console.timeEnd("index");
+        currentBlock++;
+      } else {
+        count++;
+        if (count === 10) {
+          console.log(`Next block, 10th attempt: ${currentBlock}`);
+        }
+        await sleep(1100);
+      }
+    } catch (error) {
+      console.error(`ERROR::Adding Block ${currentBlock}:: ${error}`);
+      break;
+    }
+  }
+};
+
+
+/SRC/SYNC/SYNC_CHAIN.TS CODE IS BELOW
+import { Tendermint34Client } from "@cosmjs/tendermint-rpc";
+import * as Proto from "../util/proto";
+import { createQueryClient, createRegistry } from "@ixo/impactxclient-sdk";
+import { RPC } from "../util/secrets";
+import { Chain, createChain, getChain } from "../postgres/chain";
+
+export let currentChain: Chain;
+export let queryClient: Awaited<ReturnType<typeof createQueryClient>>;
+export let registry: ReturnType<typeof createRegistry>;
+export let tendermintClient: Awaited<
+  ReturnType<typeof Tendermint34Client.connect>
+>;
+
+export const syncChain = async () => {
+  try {
+    queryClient = await createQueryClient(RPC);
+    registry = createRegistry();
+    tendermintClient = await Tendermint34Client.connect(RPC);
+
+    const res = await Proto.getLatestBlock();
+    const chainId = res?.block?.header?.chainId || "";
+    if (!chainId) throw new Error("No Chain Found on RPC Endpoint");
+
+    const existingChain = await getChain(chainId);
+
+    if (existingChain) {
+      currentChain = existingChain;
+      return;
+    }
+
+    const newChain = await createChain({
+      chainId: chainId,
+      blockHeight: 1,
+    });
+    currentChain = newChain;
+    return;
+  } catch (error) {
+    console.log(`Error occured during initiation: ${error}`);
+    process.exit();
+  }
+};
+
+
+/SRC/SYNC/SYNC_CUSTOM.TS CODE IS BELOW
+// import * as Proto from "../util/proto";
+// import { sleep } from "../util/helpers";
+// import { prisma } from "../prisma/prisma_client";
+
+// export const startSync = async () => {
+//   const syncing = true;
+//   let index = 0;
+//   let pageSize = 100;
+//   let nextCursor: string | undefined = undefined;
+
+//   const query = async (take = 1, cursor?: string) =>
+//     await prisma.transactionCore.findMany({
+//       take: take,
+//       ...(cursor
+//         ? {
+//             cursor: { hash: cursor },
+//             skip: 1,
+//           }
+//         : {}),
+//       orderBy: {
+//         blockHeight: "asc",
+//       },
+//       select: {
+//         hash: true,
+//       },
+//     });
+
+//   while (syncing) {
+//     try {
+//       console.log("Batch Index: ", index++);
+//       const res = await query(pageSize, nextCursor);
+//       if (res.length == 0) {
+//         console.log("Done!!!!!!!!!!!");
+//         break;
+//       }
+//       nextCursor = res[res.length - 1].hash;
+
+//       for (const tx of res) {
+//         const txRes = await Proto.getTx(tx.hash);
+//         if (!txRes) {
+//           console.log("Tx not found, skipping");
+//           continue;
+//         }
+//         if (txRes.tx?.body?.memo) {
+//           // console.log("hash: ", tx.hash, " memo: ", txRes.tx?.body?.memo);
+//           await prisma.transactionCore.update({
+//             where: { hash: tx.hash },
+//             data: {
+//               memo: txRes.tx?.body?.memo,
+//             },
+//           });
+//         }
+//       }
+
+//       // wait 1 second to not overload the node
+//       await sleep(1000);
+//     } catch (error) {
+//       console.error(`Error Getting Transactions: ${error}`);
+//     }
+//   }
+// };
+
+
+/SRC/SYNC_HANDLERS/BLOCK_SYNC_HANDLER.TS CODE IS BELOW
+import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
+import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
+import { upperHexFromUint8Array } from "../util/helpers";
+import { syncEvents } from "./event_sync_handler";
+import { syncTransactions } from "./transactions_sync_handler";
+import { insertBlock } from "../postgres/block";
+
+export const syncBlock = async (
+  blockHeight: number,
+  blockHash: Uint8Array,
+  timestamp: Date,
+  transactionResponses: TxResponse[],
+  beginBlockEvents: Event[],
+  endBlockEvents: Event[]
+) => {
+  const events = syncEvents(
+    beginBlockEvents,
+    transactionResponses.flatMap((txRes) => txRes.events),
+    endBlockEvents
+  );
+  const { allMessages, allTransactions } =
+    syncTransactions(transactionResponses);
+
+  try {
+    await insertBlock({
+      height: blockHeight,
+      hash: upperHexFromUint8Array(blockHash),
+      time: timestamp,
+      transactions: allTransactions,
+      messages: allMessages,
+      events: events,
+    });
+  } catch (error) {
+    console.error("ERROR::syncBlock:: ", error);
+    // throw error;
+  }
+};
+
+
+/SRC/SYNC_HANDLERS/EVENT_SYNC_HANDLER.TS CODE IS BELOW
+import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
+import { EventTypesSet } from "../types/Event";
+import { decodeEvent } from "../util/proto";
+import { EventCore } from "../postgres/block";
+
+export const syncEvents = (
+  beginBlockEvents: Event[],
+  txEvents: Event[],
+  endBlockEvents: Event[]
+): EventCore[] => {
+  let allEvents: EventCore[] = new Array();
+
+  // First index begin block events, then tx events, then end block events
+  for (const e of beginBlockEvents) {
+    const eventData = getEventData(e, true, false);
+    if (eventData) allEvents.push(eventData);
+  }
+
+  for (const e of txEvents) {
+    const eventData = getEventData(e, false, false);
+    if (eventData) allEvents.push(eventData);
+  }
+
+  for (const e of endBlockEvents) {
+    const eventData = getEventData(e, false, true);
+    if (eventData) allEvents.push(eventData);
+  }
+
+  return allEvents;
+};
+
+const getEventData = (
+  event: Event,
+  isBeginBlockEvent = false,
+  isEndBlockEvent = false
+): EventCore | undefined => {
+  try {
+    if (EventTypesSet.has(event.type)) {
+      const eventDoc = decodeEvent(event);
+      return {
+        type: eventDoc.type,
+        attributes: eventDoc.attributes,
+        endBlockEvent: isEndBlockEvent,
+        beginBlockEvent: isBeginBlockEvent,
+      };
+    }
+    return;
+  } catch (error) {
+    console.error("ERROR::getEventData:: ", error.message);
+    return;
+  }
+};
+
+
+/SRC/SYNC_HANDLERS/TRANSACTIONS_SYNC_HANDLER.TS CODE IS BELOW
+import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
+import { decodeMessage, decodeTransaction } from "../util/proto";
+import { MessageCore, TransactionCore } from "../postgres/block";
+
+export const syncTransactions = (transactionResponses: TxResponse[]) => {
+  const allMessages: MessageCore[] = [];
+  const allTransactions: TransactionCore[] = [];
+
+  for (const tr of transactionResponses) {
+    const transaction = decodeTransaction(tr);
+
+    if (transaction) {
+      // Extract and map messages to their decoded form
+      for (const m of transaction.body.messages) {
+        const value = decodeMessage(m);
+
+        // Only add valid decoded messages to allMessages
+        if (value) {
+          allMessages.push({
+            typeUrl: m.typeUrl,
+            value,
+            transactionHash: tr.txhash,
+          });
+        }
+      }
+
+      // Add the transaction if there are valid messages
+      allTransactions.push({
+        hash: tr.txhash,
+        code: tr.code,
+        fee: transaction.authInfo.fee,
+        memo: transaction.body.memo,
+        gasUsed: tr.gasUsed.toString(),
+        gasWanted: tr.gasWanted.toString(),
+      });
+    }
+  }
+
+  return { allMessages, allTransactions };
+};
+
+
+/SRC/TYPES/EVENT.TS CODE IS BELOW
+export enum EventTypes {
+  // iid
+  createIid = "ixo.iid.v1beta1.IidDocumentCreatedEvent",
+  updateIid = "ixo.iid.v1beta1.IidDocumentUpdatedEvent",
+  // entity
+  createEntity = "ixo.entity.v1beta1.EntityCreatedEvent",
+  updateEntity = "ixo.entity.v1beta1.EntityUpdatedEvent",
+  // claims
+  createCollection = "ixo.claims.v1beta1.CollectionCreatedEvent",
+  updateCollection = "ixo.claims.v1beta1.CollectionUpdatedEvent",
+  submitClaim = "ixo.claims.v1beta1.ClaimSubmittedEvent",
+  updateClaim = "ixo.claims.v1beta1.ClaimUpdatedEvent",
+  disputeClaim = "ixo.claims.v1beta1.ClaimDisputedEvent",
+  // token
+  createToken = "ixo.token.v1beta1.TokenCreatedEvent",
+  updateToken = "ixo.token.v1beta1.TokenUpdatedEvent",
+  mintToken = "ixo.token.v1beta1.TokenMintedEvent",
+  // bonds
+  createBond = "ixo.bonds.v1beta1.BondCreatedEvent",
+  updateBond = "ixo.bonds.v1beta1.BondUpdatedEvent",
+  setNextAlphaBond = "ixo.bonds.v1beta1.BondSetNextAlphaEvent",
+  buyOrderBond = "ixo.bonds.v1beta1.BondBuyOrderEvent",
+  sellOrderBond = "ixo.bonds.v1beta1.BondSellOrderEvent",
+  swapOrderBond = "ixo.bonds.v1beta1.BondSwapOrderEvent",
+  outcomePaymentBond = "ixo.bonds.v1beta1.BondMakeOutcomePaymentEvent",
+  shareWithdrawalBond = "ixo.bonds.v1beta1.BondWithdrawShareEvent",
+  reserveWithdrawalBond = "ixo.bonds.v1beta1.BondWithdrawReserveEvent",
+  // Wasm
+  wasm = "wasm",
+}
+
+const EventTypesArray = Object.values(EventTypes) as string[];
+export const EventTypesSet = new Set(EventTypesArray);
+
+export type Attribute = {
+  key: string;
+  value: string;
+};
+
+export type ConvertedEvent = {
+  type: string;
+  attributes: Attribute[];
+};
+
+
+/SRC/UTIL/HELPERS.TS CODE IS BELOW
+export const upperHexFromUint8Array = (uint8Array: Uint8Array): string => {
+  return Buffer.from(uint8Array).toString("hex").toUpperCase();
+};
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+
+/SRC/UTIL/LONG.TS CODE IS BELOW
+// @ts-nocheck
+import Long from "long";
+
+// add toJSON method to Long prototype since prisma uses JSONProtocol for serialization and deserialization
+// and Long does not have a toJSON method, please use this with caution as it may have unintended consequences
+
+if (!Long.prototype.toJSON) {
+  Long.prototype.toJSON = function () {
+    // return as object with low and high and unsigned properties
+    return {
+      low: this.low,
+      high: this.high,
+      unsigned: this.unsigned,
+    };
+  };
+}
+
+
+/SRC/UTIL/MEMORY.TS CODE IS BELOW
+export type MemoryUsage = {
+  rss: string;
+  heapTotal: string;
+  heapUsed: string;
+  external: string;
+  arrayBuffers: string;
+};
+
+export const byteSizePretty = function (bytes: number) {
+  if (bytes === 0) {
+    return "0.00 B";
+  }
+
+  let e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (
+    (bytes / Math.pow(1024, e)).toFixed(2) + " " + " KMGTP".charAt(e) + "B"
+  );
+};
+
+export const bytesSizesPretty = (bytesObject: any) => {
+  return Object.keys(bytesObject).reduce((acc, key) => {
+    acc[key] = byteSizePretty(bytesObject[key]);
+    return acc;
+  }, {}) as MemoryUsage;
+};
+
+export const getMemoryUsage = () => {
+  return bytesSizesPretty(process.memoryUsage());
+};
+
+
+/SRC/UTIL/PROTO.TS CODE IS BELOW
+import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
+import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
+import { cosmos, utils } from "@ixo/impactxclient-sdk";
+import Long from "long";
+import { queryClient, registry, tendermintClient } from "../sync/sync_chain";
+
+export const getLatestBlock = async () => {
+  try {
+    const res =
+      await queryClient.cosmos.base.tendermint.v1beta1.getLatestBlock();
+    return res;
+  } catch (error) {
+    console.error("getLatestBlock: ", error.message);
+    return;
+  }
+};
+
+export const getBlockbyHeight = async (height: number | string) => {
+  try {
+    const res =
+      await queryClient.cosmos.base.tendermint.v1beta1.getBlockByHeight({
+        height: Long.fromNumber(Number(height)),
+      });
+    return res;
+  } catch (error) {
+    if (error.toString().includes("(18)")) {
+      // console.log("Waiting for Blocks");
+      return;
+    }
+    console.error("getBlockbyHeight: ", error.message);
+    return;
+  }
+};
+
+export const getTxsEvent = async (height: number) => {
+  try {
+    const res = await queryClient.cosmos.tx.v1beta1.getTxsEvent({
+      events: [`tx.height=${height}`],
+      orderBy: cosmos.tx.v1beta1.OrderBy.ORDER_BY_ASC,
+    });
+    return res;
+  } catch (error) {
+    console.error("getTxsEvent: ", error.message);
+    return;
+  }
+};
+
+export const getTMBlockbyHeight = async (height: number) => {
+  try {
+    const res = await tendermintClient.blockResults(height);
+    return res;
+  } catch (error) {
+    if (!error.toString().includes('"code":-32603'))
+      console.error("getTMBlockbyHeight: ", error.message);
+    return;
+  }
+};
+
+export const getTx = async (hash: string) => {
+  try {
+    const res = await queryClient.cosmos.tx.v1beta1.getTx({ hash });
+    return res;
+  } catch (error) {
+    console.error("getTx: ", error.message);
+    return;
+  }
+};
+
+export const decodeTransaction = (tx: TxResponse) => {
+  try {
+    const res = registry.decode(tx.tx!);
+    return res;
+  } catch (error) {
+    console.error("decodeTransaction: ", error);
+    return;
+  }
+};
+
+export const decodeMessage = (tx: any) => {
+  try {
+    return registry.decode(tx);
+  } catch (error) {
+    console.error("decodeMessage: ", error.message);
+    return;
+  }
+};
+
+export const decodeEvent = (event: Event) => {
+  const attributes = event.attributes.map((attr) => ({
+    key: utils.conversions.Uint8ArrayToJS(attr.key),
+    value: utils.conversions.Uint8ArrayToJS(attr.value),
+  }));
+
+  return {
+    type: event.type,
+    attributes: attributes,
+  };
+};
+
+
+/SRC/UTIL/SECRETS.TS CODE IS BELOW
+export const PORT = Number(process.env.PORT) || 8080;
+export const SENTRYDSN = process.env.SENTRYDSN || undefined;
+export const RPC = process.env.RPC || "http://localhost:26657";
+export const DATABASE_URL = process.env.DATABASE_URL;
+export const TRUST_PROXY = process.env.TRUST_PROXY || 1;
+export const MIGRATE_DB_PROGRAMATICALLY =
+  Number(process.env.MIGRATE_DB_PROGRAMATICALLY ?? "0") || 0;
+export const DATABASE_USE_SSL =
+  Number(process.env.DATABASE_USE_SSL ?? "0") || 0;
+
+
+/TSCONFIG.JSON CODE IS BELOW
+{
+  "compilerOptions": {
+    "outDir": "build/dist",
+    "module": "commonjs",
+    "target": "ES2020",
+    "lib": ["ES2020", "dom", "esnext.asynciterable"],
+    "sourceMap": true,
+    "allowJs": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "rootDir": "src",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "noUnusedLocals": false,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "build", "docs", "src/seed"]
+}
+
