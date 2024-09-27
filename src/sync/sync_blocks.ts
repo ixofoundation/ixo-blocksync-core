@@ -48,7 +48,6 @@ export const startSync = async () => {
       if (logFetchTime) console.timeEnd("fetch");
 
       if (block && txsEvent && blockTM) {
-        count = 0;
         if (logIndexTime) console.time("index");
         // if block and events is not null, check if block has txs and then if events has
         // no trx, means abci layer is behind tendermint layer, wait 1 seconds and try again
@@ -87,6 +86,8 @@ export const startSync = async () => {
 
         if (logIndexTime) console.timeEnd("index");
         currentBlock++;
+        errorCount = 0;
+        count = 0;
       } else {
         count++;
         // if count is 10, log that already on 10th attempt
@@ -99,17 +100,17 @@ export const startSync = async () => {
         }
         await sleep(1100);
       }
-      errorCount = 0;
     } catch (error) {
+      count = 0;
       errorCount++;
 
       // if error, log error and sleep for 2 seconds, to attempt self healing and retry
       console.error(`ERROR::Adding Block ${currentBlock}:: ${error}`);
       await sleep(2000);
 
-      // if more than 5 errors in a row, exit
-      if (errorCount > 5) {
-        console.error("Errors for more than 10 times in a row, exiting...");
+      // if more than 3 errors in a row, exit
+      if (errorCount > 3) {
+        console.error("Errors for more than 3 times in a row, exiting...");
         throw error;
       }
     }
