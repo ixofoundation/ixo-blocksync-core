@@ -1,6 +1,6 @@
 {
   "name": "ixo-blocksync-core",
-  "version": "0.1.0-develop.8",
+  "version": "0.1.0",
   "description": "Syncs all the core info from an ixo blockchain to an instance of PostgresQL",
   "main": "index.js",
   "scripts": {
