@@ -1,4 +1,4 @@
-import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
+import { Event } from "@ixo/impactxclient-sdk/types/codegen/tendermint/abci/types";
 import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
 import { upperHexFromUint8Array } from "../util/helpers";
 import { syncEvents } from "./event_sync_handler";

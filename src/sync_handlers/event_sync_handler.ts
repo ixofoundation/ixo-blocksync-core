@@ -1,7 +1,7 @@
-import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
 import { EventTypesSet } from "../types/Event";
 import { decodeEvent } from "../util/proto";
 import { EventCore } from "../postgres/block";
+import { Event } from "@ixo/impactxclient-sdk/types/codegen/tendermint/abci/types";
 
 export const syncEvents = (
   beginBlockEvents: Event[],

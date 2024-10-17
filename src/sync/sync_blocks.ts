@@ -1,6 +1,5 @@
 import * as Proto from "../util/proto";
 import * as BlockSyncHandler from "../sync_handlers/block_sync_handler";
-import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
 import { currentChain } from "./sync_chain";
 import { utils } from "@ixo/impactxclient-sdk";
 import { sleep } from "../util/helpers";
@@ -8,6 +7,7 @@ import { getChain, updateChain } from "../postgres/chain";
 import { getMemoryUsage } from "../util/memory";
 import { withTransaction } from "../postgres/client";
 import { PoolClient } from "pg";
+import { Event } from "@ixo/impactxclient-sdk/types/codegen/tendermint/abci/types";
 
 let syncing: boolean;
 
@@ -34,7 +34,7 @@ export const startSync = async () => {
   while (syncing) {
     currentPool = undefined;
 
-    // if (currentBlock === 2792945) return; // if need custom end block
+    // if (currentBlock === 2) return; // if need custom end block
     // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
     // await sleep(4000);
 
@@ -69,8 +69,8 @@ export const startSync = async () => {
               block.blockId!.hash!,
               utils.proto.fromTimestamp(block.block!.header!.time!),
               txsEvent.txResponses,
-              blockTM.beginBlockEvents as Event[],
-              blockTM.endBlockEvents as Event[]
+              blockTM.beginBlockEvents as any,
+              blockTM.endBlockEvents as any
             ),
             updateChain({
               chainId: currentChain.chainId,
