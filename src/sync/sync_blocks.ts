@@ -61,6 +61,34 @@ export const startSync = async () => {
 
         const blockHeight = Number(block.block!.header!.height.low);
 
+        // if blockTM has finalizeBlockEvents, we need to split them into beginBlockEvents and endBlockEvents
+        // loop through finalizeBlockEvents and find the mode (BeginBlock or EndBlock) and add it to the corresponding array
+        // pushing original objects for optimization
+        let beginBlockEvents: Event[] = [];
+        let endBlockEvents: Event[] = [];
+        if (blockTM.finalizeBlockEvents.length > 0) {
+          for (let i = 0; i < blockTM.finalizeBlockEvents.length; i++) {
+            const event = blockTM.finalizeBlockEvents[i];
+            const attributes = event.attributes;
+            if (!attributes) continue;
+
+            for (let j = 0; j < attributes.length; j++) {
+              const attr = attributes[j];
+              if (attr.key === "mode") {
+                if (attr.value === "BeginBlock") {
+                  beginBlockEvents.push(event as any);
+                } else if (attr.value === "EndBlock") {
+                  endBlockEvents.push(event as any);
+                }
+                break; // Stop searching attributes once mode is found
+              }
+            }
+          }
+        } else {
+          beginBlockEvents = blockTM.beginBlockEvents as any;
+          endBlockEvents = blockTM.endBlockEvents as any;
+        }
+
         await withTransaction(async (client) => {
           currentPool = client;
           await Promise.all([
@@ -69,8 +97,8 @@ export const startSync = async () => {
               block.blockId!.hash!,
               utils.proto.fromTimestamp(block.block!.header!.time!),
               txsEvent.txResponses,
-              blockTM.beginBlockEvents as any,
-              blockTM.endBlockEvents as any
+              beginBlockEvents,
+              endBlockEvents
             ),
             updateChain({
               chainId: currentChain.chainId,
