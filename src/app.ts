@@ -5,6 +5,7 @@ import * as Sentry from "@sentry/node";
 import { SENTRYDSN, TRUST_PROXY } from "./util/secrets";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { getCoreBlock } from "./postgres/query_block";
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minutes
@@ -44,3 +45,16 @@ app.get("/", (req, res) => {
 //     headers: request.headers["x-forwarded-for"],
 //   })
 // );
+
+// =================================
+// Custom helpers for local development
+// =================================
+
+app.get("/api/development/getCoreBlock/:height", async (req, res, next) => {
+  try {
+    const result = await getCoreBlock(Number(req.params.height || 0));
+    res.json(result);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});

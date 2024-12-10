@@ -20,7 +20,7 @@
   "author": "Ixo Foundation",
   "license": "Apache 2",
   "dependencies": {
-    "@ixo/impactxclient-sdk": "1.2.0",
+    "@ixo/impactxclient-sdk": "2.3.1",
     "@sentry/node": "7.36.0",
     "@sentry/tracing": "7.36.0",
     "body-parser": "1.20.1",

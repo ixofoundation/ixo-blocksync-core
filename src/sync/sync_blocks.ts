@@ -1,6 +1,5 @@
 import * as Proto from "../util/proto";
 import * as BlockSyncHandler from "../sync_handlers/block_sync_handler";
-import { Event } from "@cosmjs/tendermint-rpc/build/tendermint34/responses";
 import { currentChain } from "./sync_chain";
 import { utils } from "@ixo/impactxclient-sdk";
 import { sleep } from "../util/helpers";
@@ -8,6 +7,7 @@ import { getChain, updateChain } from "../postgres/chain";
 import { getMemoryUsage } from "../util/memory";
 import { withTransaction } from "../postgres/client";
 import { PoolClient } from "pg";
+import { Event } from "@ixo/impactxclient-sdk/types/codegen/tendermint/abci/types";
 
 let syncing: boolean;
 
@@ -34,7 +34,7 @@ export const startSync = async () => {
   while (syncing) {
     currentPool = undefined;
 
-    // if (currentBlock === 2792945) return; // if need custom end block
+    // if (currentBlock === 2) return; // if need custom end block
     // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
     // await sleep(4000);
 
@@ -61,6 +61,34 @@ export const startSync = async () => {
 
         const blockHeight = Number(block.block!.header!.height.low);
 
+        // if blockTM has finalizeBlockEvents, we need to split them into beginBlockEvents and endBlockEvents
+        // loop through finalizeBlockEvents and find the mode (BeginBlock or EndBlock) and add it to the corresponding array
+        // pushing original objects for optimization
+        let beginBlockEvents: Event[] = [];
+        let endBlockEvents: Event[] = [];
+        if (blockTM.finalizeBlockEvents.length > 0) {
+          for (let i = 0; i < blockTM.finalizeBlockEvents.length; i++) {
+            const event = blockTM.finalizeBlockEvents[i];
+            const attributes = event.attributes;
+            if (!attributes) continue;
+
+            for (let j = 0; j < attributes.length; j++) {
+              const attr = attributes[j];
+              if (attr.key === "mode") {
+                if (attr.value === "BeginBlock") {
+                  beginBlockEvents.push(event as any);
+                } else if (attr.value === "EndBlock") {
+                  endBlockEvents.push(event as any);
+                }
+                break; // Stop searching attributes once mode is found
+              }
+            }
+          }
+        } else {
+          beginBlockEvents = blockTM.beginBlockEvents as any;
+          endBlockEvents = blockTM.endBlockEvents as any;
+        }
+
         await withTransaction(async (client) => {
           currentPool = client;
           await Promise.all([
@@ -69,8 +97,8 @@ export const startSync = async () => {
               block.blockId!.hash!,
               utils.proto.fromTimestamp(block.block!.header!.time!),
               txsEvent.txResponses,
-              blockTM.beginBlockEvents as Event[],
-              blockTM.endBlockEvents as Event[]
+              beginBlockEvents,
+              endBlockEvents
             ),
             updateChain({
               chainId: currentChain.chainId,
