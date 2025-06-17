@@ -22,6 +22,7 @@ export type MessageCore = {
   typeUrl: string;
   value: any; // JSON
   transactionHash: string;
+  index: number;
 };
 
 export type EventCore = {
@@ -29,6 +30,7 @@ export type EventCore = {
   attributes: any[]; // JSON
   beginBlockEvent: boolean;
   endBlockEvent: boolean;
+  transactionHash?: string;
 };
 
 const insertBlockSql = `
@@ -41,14 +43,14 @@ SELECT tr.hash, tr.code, tr.fee, tr."gasUsed", tr."gasWanted", tr.memo, $2, $3
 FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text, "gasWanted" text, memo text);
 `;
 const insertMessageSql = `
-INSERT INTO "MessageCore" ("typeUrl", value, "transactionHash")
-SELECT msg."typeUrl", msg.value, msg."transactionHash"
-FROM jsonb_to_recordset($1) AS msg("typeUrl" text, value jsonb, "transactionHash" text);
+INSERT INTO "MessageCore" ("typeUrl", value, "transactionHash", "index")
+SELECT msg."typeUrl", msg.value, msg."transactionHash", msg."index"
+FROM jsonb_to_recordset($1) AS msg("typeUrl" text, value jsonb, "transactionHash" text, "index" int);
 `;
 const insertEventSql = `
-INSERT INTO "EventCore" ("type", attributes, "beginBlockEvent", "endBlockEvent", "time", "blockHeight")
-SELECT ev.type, ev.attributes, ev."beginBlockEvent", ev."endBlockEvent", $2, $3
-FROM jsonb_to_recordset($1) AS ev("type" text, attributes jsonb[], "beginBlockEvent" boolean, "endBlockEvent" boolean);
+INSERT INTO "EventCore" ("type", attributes, "beginBlockEvent", "endBlockEvent", "time", "blockHeight", "transactionHash")
+SELECT ev.type, ev.attributes, ev."beginBlockEvent", ev."endBlockEvent", $2, $3, ev."transactionHash"
+FROM jsonb_to_recordset($1) AS ev("type" text, attributes jsonb[], "beginBlockEvent" boolean, "endBlockEvent" boolean, "transactionHash" text);
 `;
 
 export const insertBlock = async (block: BlockCore): Promise<void> => {

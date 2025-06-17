@@ -35,7 +35,7 @@ SELECT
   t."gasUsed",
   t."gasWanted",
   t."memo",
-  json_agg(json_build_object('typeUrl', "m"."typeUrl", 'value', m.value)) AS messages
+  json_agg(json_build_object('typeUrl', m."typeUrl", 'value', m.value, 'index', m."index")) AS messages
 FROM "TransactionCore" as t
 LEFT OUTER JOIN "MessageCore" as m ON t.hash = m."transactionHash"
 WHERE t."blockHeight" = $1
@@ -45,10 +45,10 @@ const sqlEvents = `
 SELECT
   b."height",
   b."time",
-  json_agg(json_build_object('type', e.type, 'attributes', e.attributes)) AS events
+  json_agg(json_build_object('type', e.type, 'attributes', e.attributes, 'transactionHash', e."transactionHash")) AS events
 FROM "BlockCore" as b
 LEFT OUTER JOIN (
-  SELECT "type", attributes
+  SELECT "type", attributes, "transactionHash"
     from "EventCore"
     where "blockHeight" = $1
     order by id asc

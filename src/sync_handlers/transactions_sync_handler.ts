@@ -11,7 +11,8 @@ export const syncTransactions = (transactionResponses: TxResponse[]) => {
 
     if (transaction) {
       // Extract and map messages to their decoded form
-      for (const m of transaction.body.messages) {
+      for (let i = 0; i < transaction.body.messages.length; i++) {
+        const m = transaction.body.messages[i];
         const value = decodeMessage(m);
 
         // Only add valid decoded messages to allMessages
@@ -20,6 +21,7 @@ export const syncTransactions = (transactionResponses: TxResponse[]) => {
             typeUrl: m.typeUrl,
             value,
             transactionHash: tr.txhash,
+            index: i,
           });
         }
       }

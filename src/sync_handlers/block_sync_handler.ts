@@ -15,9 +15,10 @@ export const syncBlock = async (
 ) => {
   const events = syncEvents(
     beginBlockEvents,
-    transactionResponses.flatMap((txRes) => txRes.events),
+    transactionResponses,
     endBlockEvents
   );
+
   const { allMessages, allTransactions } =
     syncTransactions(transactionResponses);
 

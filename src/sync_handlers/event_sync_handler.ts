@@ -2,10 +2,11 @@ import { EventTypesSet } from "../types/Event";
 import { decodeEvent } from "../util/proto";
 import { EventCore } from "../postgres/block";
 import { Event } from "@ixo/impactxclient-sdk/types/codegen/tendermint/abci/types";
+import { TxResponse } from "@ixo/impactxclient-sdk/types/codegen/cosmos/base/abci/v1beta1/abci";
 
 export const syncEvents = (
   beginBlockEvents: Event[],
-  txEvents: Event[],
+  txResponses: TxResponse[],
   endBlockEvents: Event[]
 ): EventCore[] => {
   let allEvents: EventCore[] = new Array();
@@ -16,9 +17,11 @@ export const syncEvents = (
     if (eventData) allEvents.push(eventData);
   }
 
-  for (const e of txEvents) {
-    const eventData = getEventData(e, false, false);
-    if (eventData) allEvents.push(eventData);
+  for (let i = 0; i < txResponses.length; i++) {
+    for (const e of txResponses[i].events) {
+      const eventData = getEventData(e, false, false, txResponses[i].txhash);
+      if (eventData) allEvents.push(eventData);
+    }
   }
 
   for (const e of endBlockEvents) {
@@ -32,7 +35,8 @@ export const syncEvents = (
 const getEventData = (
   event: Event,
   isBeginBlockEvent = false,
-  isEndBlockEvent = false
+  isEndBlockEvent = false,
+  transactionHash?: string
 ): EventCore | undefined => {
   try {
     if (EventTypesSet.has(event.type)) {
@@ -42,6 +46,7 @@ const getEventData = (
         attributes: eventDoc.attributes,
         endBlockEvent: isEndBlockEvent,
         beginBlockEvent: isBeginBlockEvent,
+        transactionHash,
       };
     }
     return;
