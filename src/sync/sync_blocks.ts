@@ -47,6 +47,9 @@ export const startSync = async () => {
       ]);
       if (logFetchTime) console.timeEnd("fetch");
 
+      // Helper to log block, txsEvent, and blockTM for debugging
+      // if (currentBlock === 114) console.dir({ block, txsEvent, blockTM }, { depth: null });
+
       if (block && txsEvent && blockTM) {
         if (logIndexTime) console.time("index");
         // if block and events is not null, check if block has txs and then if events has

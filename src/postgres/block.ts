@@ -16,6 +16,9 @@ export type TransactionCore = {
   gasUsed: string;
   gasWanted: string;
   memo: string;
+  feePayer?: string;
+  signerInfos?: any; // JSON - raw signer info array from authInfo
+  nonCriticalExtensionOptions?: any; // JSON - raw extension options (contains TxExtension for smart accounts)
 };
 
 export type MessageCore = {
@@ -38,9 +41,9 @@ INSERT INTO "BlockCore" (height, hash, "time")
 VALUES ($1, $2, $3);
 `;
 const insertTransactionSql = `
-INSERT INTO "TransactionCore" (hash, code, fee, "gasUsed", "gasWanted", memo, "time", "blockHeight")
-SELECT tr.hash, tr.code, tr.fee, tr."gasUsed", tr."gasWanted", tr.memo, $2, $3
-FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text, "gasWanted" text, memo text);
+INSERT INTO "TransactionCore" (hash, code, fee, "gasUsed", "gasWanted", memo, "time", "blockHeight", "feePayer", "signerInfos", "nonCriticalExtensionOptions")
+SELECT tr.hash, tr.code, tr.fee, tr."gasUsed", tr."gasWanted", tr.memo, $2, $3, tr."feePayer", tr."signerInfos", tr."nonCriticalExtensionOptions"
+FROM jsonb_to_recordset($1) AS tr(hash text, code int, fee jsonb, "gasUsed" text, "gasWanted" text, memo text, "feePayer" text, "signerInfos" jsonb, "nonCriticalExtensionOptions" jsonb);
 `;
 const insertMessageSql = `
 INSERT INTO "MessageCore" ("typeUrl", value, "transactionHash", "index")
