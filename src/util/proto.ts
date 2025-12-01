@@ -55,8 +55,8 @@ export const getTMBlockbyHeight = async (height: number) => {
     // console.dir(res, { depth: null });
     return res;
   } catch (error) {
-    // if (!error.toString().includes('"code":-32603'))
-    console.error("getTMBlockbyHeight: ", error.message);
+    if (!error.toString().includes('"code":-32603'))
+      console.error("getTMBlockbyHeight: ", error.message);
     return;
   }
 };
