@@ -6,7 +6,8 @@ export const syncTransactions = (transactionResponses: TxResponse[]) => {
   const allMessages: MessageCore[] = [];
   const allTransactions: TransactionCore[] = [];
 
-  for (const tr of transactionResponses) {
+  for (let txIndex = 0; txIndex < transactionResponses.length; txIndex++) {
+    const tr = transactionResponses[txIndex];
     const transaction = decodeTransaction(tr);
 
     if (transaction) {
@@ -27,6 +28,7 @@ export const syncTransactions = (transactionResponses: TxResponse[]) => {
             value,
             transactionHash: tr.txhash,
             index: i,
+            txIndex,
           });
         }
       }
@@ -42,6 +44,7 @@ export const syncTransactions = (transactionResponses: TxResponse[]) => {
         feePayer,
         signerInfos,
         nonCriticalExtensionOptions,
+        txIndex,
       });
     }
   }
