@@ -26,7 +26,7 @@ export const startSync = async () => {
   // if already has synced, start from next block
   if (currentBlock !== 1) currentBlock++;
 
-  // currentBlock = 2792944; // if need custom start block
+  // currentBlock = 505; // if need custom start block
 
   if (logSync100Time) console.time("sync");
   let count = 0;
@@ -34,7 +34,7 @@ export const startSync = async () => {
   while (syncing) {
     currentPool = undefined;
 
-    // if (currentBlock === 2) return; // if need custom end block
+    // if (currentBlock === 506) return; // if need custom end block
     // console.log("wait then get block:", currentBlock, getMemoryUsage().rss);
     // await sleep(4000);
 
@@ -46,6 +46,9 @@ export const startSync = async () => {
         Proto.getTMBlockbyHeight(currentBlock),
       ]);
       if (logFetchTime) console.timeEnd("fetch");
+
+      // Helper to log block, txsEvent, and blockTM for debugging
+      // if (currentBlock === 114) console.dir({ block, txsEvent, blockTM }, { depth: null });
 
       if (block && txsEvent && blockTM) {
         if (logIndexTime) console.time("index");

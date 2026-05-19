@@ -37,6 +37,7 @@ export enum EventTypes {
   reserveWithdrawalBond = "ixo.bonds.v1beta1.BondWithdrawReserveEvent",
   // Wasm
   wasm = "wasm",
+  instantiate = "instantiate",
   // epochs
   startEpoch = "ixo.epochs.v1beta1.EpochStartEvent",
   endEpoch = "ixo.epochs.v1beta1.EpochEndEvent",
