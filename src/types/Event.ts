@@ -47,13 +47,32 @@ export enum EventTypes {
   authAdded = "ixo.smartaccount.v1beta1.AuthenticatorAddedEvent",
   authRemoved = "ixo.smartaccount.v1beta1.AuthenticatorRemovedEvent",
   authSetActive = "ixo.smartaccount.v1beta1.AuthenticatorSetActiveStateEvent",
-  // liquidstake
+  // liquidstake (v6 + v7)
   lsParamsUpdated = "ixo.liquidstake.v1beta1.LiquidStakeParamsUpdatedEvent",
   lsStake = "ixo.liquidstake.v1beta1.LiquidStakeEvent",
   lsUpstake = "ixo.liquidstake.v1beta1.LiquidUnstakeEvent",
   lsAddLSValidator = "ixo.liquidstake.v1beta1.AddLiquidValidatorEvent",
   lsRebalanced = "ixo.liquidstake.v1beta1.RebalancedLiquidStakeEvent",
   lsAutoCompound = "ixo.liquidstake.v1beta1.AutocompoundStakingRewardsEvent",
+  // liquidstake v7 (new multi-pool typed events)
+  lsModuleParamsUpdated = "ixo.liquidstake.v1beta1.ModuleParamsUpdatedEvent",
+  lsPoolCreated = "ixo.liquidstake.v1beta1.PoolCreatedEvent",
+  lsPoolUpdated = "ixo.liquidstake.v1beta1.PoolUpdatedEvent",
+  // claims v7
+  disputeResolved = "ixo.claims.v1beta1.DisputeResolvedEvent",
+  memberBudgetCreated = "ixo.claims.v1beta1.MemberBudgetCreatedEvent",
+  memberBudgetUpdated = "ixo.claims.v1beta1.MemberBudgetUpdatedEvent",
+  memberBudgetRemoved = "ixo.claims.v1beta1.MemberBudgetRemovedEvent",
+  agentDepositBalanceCreated = "ixo.claims.v1beta1.AgentDepositBalanceCreatedEvent",
+  agentDepositBalanceUpdated = "ixo.claims.v1beta1.AgentDepositBalanceUpdatedEvent",
+  agentDepositBalanceRemoved = "ixo.claims.v1beta1.AgentDepositBalanceRemovedEvent",
+  // names v7
+  namespaceCreated = "ixo.names.v1beta1.NamespaceCreatedEvent",
+  namespaceUpdated = "ixo.names.v1beta1.NamespaceUpdatedEvent",
+  nameRegistered = "ixo.names.v1beta1.NameRegisteredEvent",
+  nameUpdated = "ixo.names.v1beta1.NameUpdatedEvent",
+  nameTransferred = "ixo.names.v1beta1.NameTransferredEvent",
+  nameStatusChanged = "ixo.names.v1beta1.NameStatusChangedEvent",
 }
 
 const EventTypesArray = Object.values(EventTypes) as string[];
