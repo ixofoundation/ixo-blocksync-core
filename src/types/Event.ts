@@ -38,6 +38,7 @@ export enum EventTypes {
   // Wasm
   wasm = "wasm",
   instantiate = "instantiate",
+  migrate = "migrate",
   // epochs
   startEpoch = "ixo.epochs.v1beta1.EpochStartEvent",
   endEpoch = "ixo.epochs.v1beta1.EpochEndEvent",
