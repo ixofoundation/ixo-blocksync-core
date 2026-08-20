@@ -14,6 +14,7 @@ export enum EventTypes {
   submitClaim = "ixo.claims.v1beta1.ClaimSubmittedEvent",
   updateClaim = "ixo.claims.v1beta1.ClaimUpdatedEvent",
   evaluateClaim = "ixo.claims.v1beta1.ClaimEvaluatedEvent",
+  claimAuthorizationCreated = "ixo.claims.v1beta1.ClaimAuthorizationCreatedEvent",
   disputeClaim = "ixo.claims.v1beta1.ClaimDisputedEvent",
   submitIntent = "ixo.claims.v1beta1.IntentSubmittedEvent",
   updateIntent = "ixo.claims.v1beta1.IntentUpdatedEvent",
@@ -35,6 +36,17 @@ export enum EventTypes {
   outcomePaymentBond = "ixo.bonds.v1beta1.BondMakeOutcomePaymentEvent",
   shareWithdrawalBond = "ixo.bonds.v1beta1.BondWithdrawShareEvent",
   reserveWithdrawalBond = "ixo.bonds.v1beta1.BondWithdrawReserveEvent",
+  // authz (cosmos-sdk typed events, emitted at KEEPER level so every path is
+  // covered: MsgGrant/MsgRevoke, MsgExec exhaustion-deletion, ixo entity
+  // account authz, claims module auto-grants (delayed payouts,
+  // MsgCreateClaimAuthorization), and wasm/ICA/gov-dispatched grants.
+  // NOT emitted for: constraint updates (keeper update()) and passive expiry
+  // pruning - both are silent on-chain.
+  grantAuthz = "cosmos.authz.v1beta1.EventGrant",
+  revokeAuthz = "cosmos.authz.v1beta1.EventRevoke",
+  // ixo entity-account authz companions (full grant payload incl constraints)
+  entityAuthzCreated = "ixo.entity.v1beta1.EntityAccountAuthzCreatedEvent",
+  entityAuthzRevoked = "ixo.entity.v1beta1.EntityAccountAuthzRevokedEvent",
   // Wasm
   wasm = "wasm",
   instantiate = "instantiate",
