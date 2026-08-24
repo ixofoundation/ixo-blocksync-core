@@ -4,6 +4,7 @@ import { currentChain } from "./sync_chain";
 import { utils } from "@ixo/impactxclient-sdk";
 import { sleep } from "../util/helpers";
 import { getChain, updateChain } from "../postgres/chain";
+import { SLOW_BLOCK_LOG_MS } from "../util/secrets";
 import { getMemoryUsage } from "../util/memory";
 import { withTransaction } from "../postgres/client";
 import { PoolClient } from "pg";
@@ -40,11 +41,13 @@ export const startSync = async () => {
 
     try {
       if (logFetchTime) console.time("fetch");
+      const fetchStart = Date.now();
       const [block, txsEvent, blockTM] = await Promise.all([
         Proto.getBlockbyHeight(currentBlock),
         Proto.getTxsEvent(currentBlock),
         Proto.getTMBlockbyHeight(currentBlock),
       ]);
+      const fetchMs = Date.now() - fetchStart;
       if (logFetchTime) console.timeEnd("fetch");
 
       // Helper to log block, txsEvent, and blockTM for debugging
@@ -109,6 +112,18 @@ export const startSync = async () => {
             }),
           ]);
         });
+
+        const totalMs = Date.now() - fetchStart;
+        if (SLOW_BLOCK_LOG_MS > 0 && totalMs > SLOW_BLOCK_LOG_MS) {
+          console.log(
+            `SLOW BLOCK::${blockHeight} took ${(totalMs / 1000).toFixed(
+              2
+            )}s (fetch ${(fetchMs / 1000).toFixed(2)}s, index ${(
+              (totalMs - fetchMs) /
+              1000
+            ).toFixed(2)}s)`
+          );
+        }
 
         if (blockHeight % 100 === 0) {
           console.log(`Synced Block ${blockHeight}`);
