@@ -7,3 +7,5 @@ export const MIGRATE_DB_PROGRAMATICALLY =
   Number(process.env.MIGRATE_DB_PROGRAMATICALLY ?? "0") || 0;
 export const DATABASE_USE_SSL =
   Number(process.env.DATABASE_USE_SSL ?? "0") || 0;
+// log blocks whose fetch+index time exceeds this many milliseconds (0 disables)
+export const SLOW_BLOCK_LOG_MS = Number(process.env.SLOW_BLOCK_LOG_MS ?? "8000");
